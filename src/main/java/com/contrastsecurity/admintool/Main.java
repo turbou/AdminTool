@@ -70,6 +70,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.yaml.snakeyaml.Yaml;
 
+import com.contrastsecurity.admintool.SanitizerDeleteWithProgress.CompareMode;
+import com.contrastsecurity.admintool.SanitizerDeleteWithProgress.FilterMode;
 import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.exception.NonApiException;
 import com.contrastsecurity.admintool.exception.TsvException;
@@ -111,8 +113,9 @@ public class Main implements PropertyChangeListener {
 
     private Button sanitizerExportBtn;
     private Button sanitizerDeleteBtn;
-    private Text sanitizerDelIncludeTxt;
-    private Text sanitizerDelExcludeTxt;
+    private FilterMode currentSanitizerFilterMode;
+    private CompareMode currentSanitizerCompareMode;
+    private Text sanitizerFilterWordTxt;
     private Button sanitizerImportBtn;
     private Button sanitizerCompareBtn;
     private Button sanitizerSkeletonBtn;
@@ -157,6 +160,9 @@ public class Main implements PropertyChangeListener {
             e.printStackTrace();
         }
         try {
+            this.ps.setDefault(PreferenceConstants.SANITIZER_FILTER_MODE, FilterMode.EXCLUDE.name());
+            this.ps.setDefault(PreferenceConstants.SANITIZER_COMPARE_MODE, CompareMode.STARTSWITH.name());
+
             this.ps.setDefault(PreferenceConstants.TSV_STATUS, TsvStatusEnum.NONE.name());
             this.ps.setDefault(PreferenceConstants.PROXY_AUTH, "none");
             this.ps.setDefault(PreferenceConstants.CONNECTION_TIMEOUT, 3000);
@@ -221,6 +227,9 @@ public class Main implements PropertyChangeListener {
                 ps.setValue(PreferenceConstants.OPENED_SUB_TAB_IDX, sub_idx);
                 ps.setValue(PreferenceConstants.MEM_WIDTH, shell.getSize().x);
                 ps.setValue(PreferenceConstants.MEM_HEIGHT, shell.getSize().y);
+                ps.setValue(PreferenceConstants.SANITIZER_FILTER_WORD, sanitizerFilterWordTxt.getText());
+                ps.setValue(PreferenceConstants.SANITIZER_FILTER_MODE, currentSanitizerFilterMode.name());
+                ps.setValue(PreferenceConstants.SANITIZER_COMPARE_MODE, currentSanitizerCompareMode.name());
                 ps.setValue(PreferenceConstants.ONLY_HAS_CVE, onlyHasCVEChk.getSelection());
                 ps.setValue(PreferenceConstants.INCLUDE_CVE_DETAIL, includeCVEDetailChk.getSelection());
                 ps.setValue(PreferenceConstants.PROXY_TMP_USER, "");
@@ -388,13 +397,12 @@ public class Main implements PropertyChangeListener {
         sanitizerDeleteBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                String includeName = sanitizerDelIncludeTxt.getText().trim();
-                String excludeName = sanitizerDelExcludeTxt.getText().trim();
-                if (!includeName.isEmpty() && !excludeName.isEmpty()) {
-                    MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)の一括削除", "削除対象と残す対象の両方を指定することはできません。");
+                if (!MessageDialog.openConfirm(shell, "セキュリティ制御(サニタイザ)の一括削除", "セキュリティ制御(サニタイザ)を一括削除します。よろしいですか？")) {
                     return;
                 }
-                SanitizerDeleteWithProgress progress = new SanitizerDeleteWithProgress(shell, ps, getValidOrganizations(), includeName, excludeName);
+                String filterWord = sanitizerFilterWordTxt.getText().trim();
+                SanitizerDeleteWithProgress progress = new SanitizerDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord, currentSanitizerFilterMode,
+                        currentSanitizerCompareMode);
                 ProgressMonitorDialog progDialog = new SanitizerDeleteProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
@@ -432,12 +440,13 @@ public class Main implements PropertyChangeListener {
         deleteControlGrpGrDt.heightHint = 70;
         deleteCtrlGrp.setLayoutData(deleteControlGrpGrDt);
 
-        sanitizerDelIncludeTxt = new Text(deleteCtrlGrp, SWT.BORDER);
-        sanitizerDelIncludeTxt.setMessage("対象の名前を指定してください。(任意)");
-        sanitizerDelIncludeTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        sanitizerDelIncludeTxt.addListener(SWT.FocusIn, new Listener() {
+        sanitizerFilterWordTxt = new Text(deleteCtrlGrp, SWT.BORDER);
+        sanitizerFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
+        sanitizerFilterWordTxt.setMessage("対象の名前を指定してください。(任意)");
+        sanitizerFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        sanitizerFilterWordTxt.addListener(SWT.FocusIn, new Listener() {
             public void handleEvent(Event e) {
-                sanitizerDelIncludeTxt.selectAll();
+                sanitizerFilterWordTxt.selectAll();
             }
         });
 
@@ -455,10 +464,30 @@ public class Main implements PropertyChangeListener {
         cludeLblGrDt.widthHint = 60;
         cludeLbl.setLayoutData(cludeLblGrDt);
 
-        Button include = new Button(inExcludeGrp, SWT.RADIO);
-        include.setText("削除");
         Button exclude = new Button(inExcludeGrp, SWT.RADIO);
         exclude.setText("残す");
+        exclude.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                currentSanitizerFilterMode = FilterMode.EXCLUDE;
+            }
+        });
+        Button include = new Button(inExcludeGrp, SWT.RADIO);
+        include.setText("削除");
+        include.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                currentSanitizerFilterMode = FilterMode.INCLUDE;
+            }
+        });
+        FilterMode filterMode = FilterMode.valueOf(ps.getString(PreferenceConstants.SANITIZER_FILTER_MODE));
+        if (filterMode == null || FilterMode.EXCLUDE == filterMode) {
+            exclude.setSelection(true);
+            currentSanitizerFilterMode = FilterMode.EXCLUDE;
+        } else {
+            include.setSelection(true);
+            currentSanitizerFilterMode = FilterMode.INCLUDE;
+        }
 
         Composite compareGrp = new Composite(deleteCtrlGrp, SWT.NULL);
         GridLayout compareGrpLt = new GridLayout(4, false);
@@ -476,10 +505,40 @@ public class Main implements PropertyChangeListener {
 
         Button startsWith = new Button(compareGrp, SWT.RADIO);
         startsWith.setText("前方一致");
+        startsWith.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                currentSanitizerCompareMode = CompareMode.STARTSWITH;
+            }
+        });
         Button endsWith = new Button(compareGrp, SWT.RADIO);
         endsWith.setText("後方一致");
+        endsWith.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                currentSanitizerCompareMode = CompareMode.ENDSWITH;
+            }
+        });
         Button contains = new Button(compareGrp, SWT.RADIO);
         contains.setText("部分一致");
+        contains.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                currentSanitizerCompareMode = CompareMode.CONTAINS;
+            }
+        });
+
+        CompareMode compareMode = CompareMode.valueOf(ps.getString(PreferenceConstants.SANITIZER_COMPARE_MODE));
+        if (compareMode == null || CompareMode.STARTSWITH == compareMode) {
+            startsWith.setSelection(true);
+            currentSanitizerCompareMode = CompareMode.STARTSWITH;
+        } else if (CompareMode.ENDSWITH == compareMode) {
+            endsWith.setSelection(true);
+            currentSanitizerCompareMode = CompareMode.ENDSWITH;
+        } else {
+            contains.setSelection(true);
+            currentSanitizerCompareMode = CompareMode.CONTAINS;
+        }
 
         // ========== インポートボタン ==========
         sanitizerImportBtn = new Button(vulButtonGrp, SWT.PUSH);
@@ -497,7 +556,6 @@ public class Main implements PropertyChangeListener {
                 dialog.setText("インポートするjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
                 String file = dialog.open();
-                System.out.println(file);
             }
         });
 
@@ -517,7 +575,6 @@ public class Main implements PropertyChangeListener {
                 dialog.setText("比較する対象のjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
                 String file = dialog.open();
-                System.out.println(file);
             }
         });
 
@@ -535,7 +592,6 @@ public class Main implements PropertyChangeListener {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
                 dialog.setText("出力先フォルダを指定してください。");
                 String dir = dialog.open();
-                System.out.println(dir);
             }
         });
 

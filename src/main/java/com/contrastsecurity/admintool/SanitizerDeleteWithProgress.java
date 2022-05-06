@@ -42,41 +42,34 @@ import com.contrastsecurity.admintool.model.Organization;
 
 public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
 
-    public enum FILTER_MODE {
-        NONE,
+    public enum FilterMode {
         INCLUDE,
         EXCLUDE
     }
 
-    public enum COMPARE_MODE {
+    public enum CompareMode {
         STARTSWITH,
         ENDSWITH,
-        CONTAINS,
-        FULLMATCH
+        CONTAINS
+
     }
 
     private Shell shell;
     private PreferenceStore ps;
     private List<Organization> orgs;
-    private String includeName;
-    private String excludeName;
-    private FILTER_MODE filterMode;
+    private String filterWord;
+    private FilterMode filterMode;
+    private CompareMode compareMode;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SanitizerDeleteWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String includeName, String excludeName) {
+    public SanitizerDeleteWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filterWord, FilterMode filterMode, CompareMode compareMode) {
         this.shell = shell;
         this.ps = ps;
         this.orgs = orgs;
-        this.includeName = includeName;
-        this.excludeName = excludeName;
-        if (this.includeName.isEmpty() && this.excludeName.isEmpty()) {
-            this.filterMode = FILTER_MODE.NONE;
-        } else if (this.excludeName.isEmpty()) {
-            this.filterMode = FILTER_MODE.INCLUDE;
-        } else {
-            this.filterMode = FILTER_MODE.EXCLUDE;
-        }
+        this.filterWord = filterWord;
+        this.filterMode = filterMode;
+        this.compareMode = compareMode;
     }
 
     @SuppressWarnings("unchecked")
@@ -98,16 +91,50 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
                         throw new InterruptedException("キャンセルされました。");
                     }
                     monitor.subTask(String.format("セキュリティ制御(サニタイザ)を削除...%s", control.getName()));
-                    switch (this.filterMode) {
-                        case INCLUDE:
-                            break;
-                        case EXCLUDE:
-                            if (control.getName().startsWith(excludeName)) {
-                                continue;
-                            }
-                            break;
-                        case NONE:
-                            break;
+                    if (!control.getType().equals("SANITIZER")) {
+                        continue;
+                    }
+                    if (!filterWord.isEmpty()) {
+                        switch (this.filterMode) {
+                            case EXCLUDE:
+                                switch (this.compareMode) {
+                                    case STARTSWITH:
+                                        if (control.getName().startsWith(filterWord)) {
+                                            continue;
+                                        }
+                                        break;
+                                    case ENDSWITH:
+                                        if (control.getName().endsWith(filterWord)) {
+                                            continue;
+                                        }
+                                        break;
+                                    case CONTAINS:
+                                        if (control.getName().contains(filterWord)) {
+                                            continue;
+                                        }
+                                        break;
+                                }
+                                break;
+                            case INCLUDE:
+                                switch (this.compareMode) {
+                                    case STARTSWITH:
+                                        if (!control.getName().startsWith(filterWord)) {
+                                            continue;
+                                        }
+                                        break;
+                                    case ENDSWITH:
+                                        if (!control.getName().endsWith(filterWord)) {
+                                            continue;
+                                        }
+                                        break;
+                                    case CONTAINS:
+                                        if (!control.getName().contains(filterWord)) {
+                                            continue;
+                                        }
+                                        break;
+                                }
+                                break;
+                        }
                     }
                     Api controlDeleteApi = new ControlDeleteApi(this.shell, this.ps, org, control.getId());
                     controlDeleteApi.delete();

@@ -42,6 +42,10 @@ public class PreferenceConstants {
     public static final String CONNECTION_TIMEOUT = new String("com.contrastsecurity.csvdltool.connection_timeout");
     public static final String SOCKET_TIMEOUT = new String("com.contrastsecurity.csvdltool.socket_timeout");
 
+    public static final String SANITIZER_FILTER_WORD = new String("com.contrastsecurity.admindltool.sanitizer_filter_word");
+    public static final String SANITIZER_FILTER_MODE = new String("com.contrastsecurity.admindltool.sanitizer_filter_mode");
+    public static final String SANITIZER_COMPARE_MODE = new String("com.contrastsecurity.admindltool.sanitizer_compare_mode");
+
     public static final String SLEEP_VUL = new String("com.contrastsecurity.csvdltool.sleep_vul");
 
     public static final String CSV_OUT_HEADER_VUL = new String("com.contrastsecurity.csvdltool.csv_out_header_vul");
