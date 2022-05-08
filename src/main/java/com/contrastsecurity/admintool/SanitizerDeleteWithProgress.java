@@ -24,12 +24,15 @@
 package com.contrastsecurity.admintool;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -60,6 +63,7 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
     private String filterWord;
     private FilterMode filterMode;
     private CompareMode compareMode;
+    private List<Control> targetControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
@@ -70,6 +74,7 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
         this.filterWord = filterWord;
         this.filterMode = filterMode;
         this.compareMode = compareMode;
+        this.targetControls = new ArrayList<Control>();
     }
 
     @SuppressWarnings("unchecked")
@@ -82,8 +87,8 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
                 monitor.setTaskName(org.getName());
                 // アプリケーション一覧を取得
                 monitor.subTask("セキュリティ制御(サニタイザ)の情報を取得...");
-                Api applicationsApi = new ControlsApi(this.shell, this.ps, org);
-                List<Control> controls = (List<Control>) applicationsApi.get();
+                Api controlsApi = new ControlsApi(this.shell, this.ps, org);
+                List<Control> controls = (List<Control>) controlsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
                 for (Control control : controls) {
@@ -136,9 +141,35 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
                                 break;
                         }
                     }
+                    this.targetControls.add(control);
+                    sub3Monitor.worked(1);
+                }
+                if (this.targetControls.isEmpty()) {
+                    this.shell.getDisplay().syncExec(new Runnable() {
+                        public void run() {
+                            MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)の一括削除", "削除対象が一件もありません。");
+                            monitor.setCanceled(true);
+                        }
+                    });
+                }
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                this.shell.getDisplay().syncExec(new Runnable() {
+                    public void run() {
+                        SanitizerDeleteConfirmDialog orgDialog = new SanitizerDeleteConfirmDialog(shell, targetControls);
+                        int result = orgDialog.open();
+                        if (IDialogConstants.OK_ID != result) {
+                            monitor.setCanceled(true);
+                        }
+                    }
+                });
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                for (Control control : this.targetControls) {
                     Api controlDeleteApi = new ControlDeleteApi(this.shell, this.ps, org, control.getId());
                     controlDeleteApi.delete();
-                    sub3Monitor.worked(1);
                 }
                 sub3Monitor.done();
                 Thread.sleep(500);
