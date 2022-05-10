@@ -47,6 +47,7 @@ public class ControlsApi extends Api {
 
     @Override
     protected Object convert(String response) {
+        System.out.println(response);
         Gson gson = new Gson();
         Type controlsType = new TypeToken<ControlsJson>() {
         }.getType();

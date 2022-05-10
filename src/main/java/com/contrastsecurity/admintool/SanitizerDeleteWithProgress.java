@@ -32,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -61,32 +60,28 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
     private PreferenceStore ps;
     private List<Organization> orgs;
     private String filterWord;
-    private FilterMode filterMode;
-    private CompareMode compareMode;
     private List<Control> targetControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SanitizerDeleteWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filterWord, FilterMode filterMode, CompareMode compareMode) {
+    public SanitizerDeleteWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filterWord) {
         this.shell = shell;
         this.ps = ps;
         this.orgs = orgs;
         this.filterWord = filterWord;
-        this.filterMode = filterMode;
-        this.compareMode = compareMode;
         this.targetControls = new ArrayList<Control>();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("セキュリティ制御(サニタイザ)の削除...", 100 * this.orgs.size());
+        monitor.beginTask("セキュリティ制御の削除...", 100 * this.orgs.size());
         Thread.sleep(300);
         for (Organization org : this.orgs) {
             try {
                 monitor.setTaskName(org.getName());
                 // アプリケーション一覧を取得
-                monitor.subTask("セキュリティ制御(サニタイザ)の情報を取得...");
+                monitor.subTask("セキュリティ制御の情報を取得...");
                 Api controlsApi = new ControlsApi(this.shell, this.ps, org);
                 List<Control> controls = (List<Control>) controlsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
@@ -95,70 +90,37 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("キャンセルされました。");
                     }
-                    monitor.subTask(String.format("セキュリティ制御(サニタイザ)を削除...%s", control.getName()));
-                    if (!control.getType().equals("SANITIZER")) {
-                        continue;
-                    }
+                    monitor.subTask(String.format("セキュリティ制御を削除...%s", control.getName()));
+                    control.setDeleteFlg(false);
                     if (!filterWord.isEmpty()) {
-                        switch (this.filterMode) {
-                            case EXCLUDE:
-                                switch (this.compareMode) {
-                                    case STARTSWITH:
-                                        if (control.getName().startsWith(filterWord)) {
-                                            continue;
-                                        }
-                                        break;
-                                    case ENDSWITH:
-                                        if (control.getName().endsWith(filterWord)) {
-                                            continue;
-                                        }
-                                        break;
-                                    case CONTAINS:
-                                        if (control.getName().contains(filterWord)) {
-                                            continue;
-                                        }
-                                        break;
+                        if (filterWord.contains("*")) {
+                            String word = filterWord.replace("*", "");
+                            if (filterWord.startsWith("*") && filterWord.endsWith("*")) {
+                                if (control.getName().contains(word)) {
+                                    control.setDeleteFlg(true);
                                 }
-                                break;
-                            case INCLUDE:
-                                switch (this.compareMode) {
-                                    case STARTSWITH:
-                                        if (!control.getName().startsWith(filterWord)) {
-                                            continue;
-                                        }
-                                        break;
-                                    case ENDSWITH:
-                                        if (!control.getName().endsWith(filterWord)) {
-                                            continue;
-                                        }
-                                        break;
-                                    case CONTAINS:
-                                        if (!control.getName().contains(filterWord)) {
-                                            continue;
-                                        }
-                                        break;
+                            } else if (filterWord.endsWith("*")) {
+                                if (control.getName().startsWith(word)) {
+                                    control.setDeleteFlg(true);
                                 }
-                                break;
+                            } else if (filterWord.startsWith("*")) {
+                                if (control.getName().endsWith(word)) {
+                                    control.setDeleteFlg(true);
+                                }
+                            }
+                        } else {
+                            if (control.getName().equals(filterWord)) {
+                                control.setDeleteFlg(true);
+                            }
                         }
+                        this.targetControls.add(control);
                     }
-                    this.targetControls.add(control);
                     sub3Monitor.worked(1);
                 }
-                if (this.targetControls.isEmpty()) {
-                    this.shell.getDisplay().syncExec(new Runnable() {
-                        public void run() {
-                            MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)の一括削除", "削除対象が一件もありません。");
-                            monitor.setCanceled(true);
-                        }
-                    });
-                }
-                if (monitor.isCanceled()) {
-                    return;
-                }
+                SanitizerDeleteConfirmDialog dialog = new SanitizerDeleteConfirmDialog(shell, this.targetControls);
                 this.shell.getDisplay().syncExec(new Runnable() {
                     public void run() {
-                        SanitizerDeleteConfirmDialog orgDialog = new SanitizerDeleteConfirmDialog(shell, targetControls);
-                        int result = orgDialog.open();
+                        int result = dialog.open();
                         if (IDialogConstants.OK_ID != result) {
                             monitor.setCanceled(true);
                         }
@@ -167,7 +129,15 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
                 if (monitor.isCanceled()) {
                     return;
                 }
-                for (Control control : this.targetControls) {
+                List<Integer> selectedIdxes = dialog.getSelectedIdxes();
+                if (selectedIdxes.isEmpty()) {
+                    monitor.setCanceled(true);
+                }
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                for (Integer index : selectedIdxes) {
+                    Control control = this.targetControls.get(index);
                     Api controlDeleteApi = new ControlDeleteApi(this.shell, this.ps, org, control.getId());
                     controlDeleteApi.delete();
                 }

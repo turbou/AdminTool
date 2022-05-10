@@ -60,7 +60,7 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         composite.setLayout(new GridLayout(1, false));
-        new Label(composite, SWT.LEFT).setText("削除対象のセキュリティ制御(サニタイザ)：");
+        Label titleLbl = new Label(composite, SWT.LEFT);
         controlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
         controlsTable.setLayoutData(tableGrDt);
@@ -71,7 +71,7 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
         column0.setResizable(false);
         TableColumn column1 = new TableColumn(controlsTable, SWT.CENTER);
         column1.setWidth(50);
-        column1.setText("有効");
+        column1.setText("削除");
         TableColumn column2 = new TableColumn(controlsTable, SWT.LEFT);
         column2.setWidth(50);
         column2.setText("ID");
@@ -91,17 +91,29 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
         for (com.contrastsecurity.admintool.model.Control control : controls) {
             addColToControlTable(control, -1);
         }
-
+        if (selectedIdxes.isEmpty()) {
+            titleLbl.setText("削除対象のセキュリティ制御はありません。");
+        } else {
+            titleLbl.setText("チェックされているセキュリティ制御が削除対象となります。");
+        }
         Composite chkButtonGrp = new Composite(composite, SWT.NONE);
         chkButtonGrp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         chkButtonGrp.setLayout(new GridLayout(2, true));
 
         final Button allOnBtn = new Button(chkButtonGrp, SWT.NULL);
-        allOnBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        allOnBtn.setLayoutData(new GridData());
         allOnBtn.setText("すべてオン");
+        if (selectedIdxes.isEmpty()) {
+            allOnBtn.setEnabled(false);
+        }
         allOnBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                for (com.contrastsecurity.admintool.model.Control control : controls) {
+                    if (control.isDeleteFlg()) {
+                        selectedIdxes.add(controls.indexOf(control));
+                    }
+                }
                 for (Button button : checkBoxList) {
                     button.setSelection(true);
                 }
@@ -109,14 +121,18 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
         });
 
         final Button allOffBtn = new Button(chkButtonGrp, SWT.NULL);
-        allOffBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        allOffBtn.setLayoutData(new GridData());
         allOffBtn.setText("すべてオフ");
+        if (selectedIdxes.isEmpty()) {
+            allOffBtn.setEnabled(false);
+        }
         allOffBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (Button button : checkBoxList) {
                     button.setSelection(false);
                 }
+                selectedIdxes.clear();
             }
         });
 
@@ -135,7 +151,14 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
         }
         TableEditor editor = new TableEditor(controlsTable);
         Button button = new Button(controlsTable, SWT.CHECK);
-        button.setSelection(true);
+        if (control.isDeleteFlg()) {
+            button.setEnabled(true);
+            button.setSelection(true);
+            checkBoxList.add(button);
+            selectedIdxes.add(controls.indexOf(control));
+        } else {
+            button.setEnabled(false);
+        }
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -158,10 +181,17 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
         item.setText(6, String.valueOf(control.isEnabled()));
     }
 
+    public List<Integer> getSelectedIdxes() {
+        return selectedIdxes;
+    }
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, "削除実行", true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        if (this.selectedIdxes.isEmpty()) {
+            getButton(IDialogConstants.OK_ID).setEnabled(false);
+        }
     }
 
     @Override
@@ -171,7 +201,7 @@ public class SanitizerDeleteConfirmDialog extends Dialog {
 
     @Override
     protected void setShellStyle(int newShellStyle) {
-        super.setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.RESIZE | SWT.APPLICATION_MODAL);
+        super.setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.RESIZE | SWT.MAX | SWT.APPLICATION_MODAL);
     }
 
     @Override

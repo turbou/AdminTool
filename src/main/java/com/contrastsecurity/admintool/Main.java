@@ -28,13 +28,18 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.OS;
 import org.apache.logging.log4j.LogManager;
@@ -65,7 +70,6 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.yaml.snakeyaml.Yaml;
@@ -87,6 +91,7 @@ import com.contrastsecurity.admintool.preference.OtherPreferencePage;
 import com.contrastsecurity.admintool.preference.PreferenceConstants;
 import com.contrastsecurity.admintool.preference.VulCSVColumnPreferencePage;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
@@ -103,26 +108,20 @@ public class Main implements PropertyChangeListener {
     public static final String FILE_ENCODING = "UTF-8";
 
     public static final int MINIMUM_SIZE_WIDTH = 480;
-    public static final int MINIMUM_SIZE_HEIGHT = 400;
+    public static final int MINIMUM_SIZE_HEIGHT = 360;
 
     private AdminToolShell shell;
 
-    // ASSESS
     private CTabFolder mainTabFolder;
-    private CTabFolder subTabFolder;
+    // 例外のサブタブ
+    private CTabFolder subExceptionTabFolder;
 
     private Button sanitizerExportBtn;
     private Button sanitizerDeleteBtn;
-    private FilterMode currentSanitizerFilterMode;
-    private CompareMode currentSanitizerCompareMode;
     private Text sanitizerFilterWordTxt;
     private Button sanitizerImportBtn;
     private Button sanitizerCompareBtn;
     private Button sanitizerSkeletonBtn;
-
-    private Button libExecuteBtn;
-    private Button onlyHasCVEChk;
-    private Button includeCVEDetailChk;
 
     private Button settingBtn;
 
@@ -179,7 +178,8 @@ public class Main implements PropertyChangeListener {
             this.ps.setDefault(PreferenceConstants.CSV_FILE_FORMAT_LIB, "'lib'_yyyy-MM-dd_HHmmss");
 
             this.ps.setDefault(PreferenceConstants.OPENED_MAIN_TAB_IDX, 0);
-            this.ps.setDefault(PreferenceConstants.OPENED_SUB_TAB_IDX, 0);
+            this.ps.setDefault(PreferenceConstants.OPENED_SUB_SC_TAB_IDX, 0);
+            this.ps.setDefault(PreferenceConstants.OPENED_SUB_EX_TAB_IDX, 0);
 
             Yaml yaml = new Yaml();
             InputStream is = new FileInputStream("contrast_security.yaml");
@@ -222,16 +222,12 @@ public class Main implements PropertyChangeListener {
             @Override
             public void shellClosed(ShellEvent event) {
                 int main_idx = mainTabFolder.getSelectionIndex();
-                int sub_idx = subTabFolder.getSelectionIndex();
+                int sub_ex_idx = subExceptionTabFolder.getSelectionIndex();
                 ps.setValue(PreferenceConstants.OPENED_MAIN_TAB_IDX, main_idx);
-                ps.setValue(PreferenceConstants.OPENED_SUB_TAB_IDX, sub_idx);
+                ps.setValue(PreferenceConstants.OPENED_SUB_EX_TAB_IDX, sub_ex_idx);
                 ps.setValue(PreferenceConstants.MEM_WIDTH, shell.getSize().x);
                 ps.setValue(PreferenceConstants.MEM_HEIGHT, shell.getSize().y);
                 ps.setValue(PreferenceConstants.SANITIZER_FILTER_WORD, sanitizerFilterWordTxt.getText());
-                ps.setValue(PreferenceConstants.SANITIZER_FILTER_MODE, currentSanitizerFilterMode.name());
-                ps.setValue(PreferenceConstants.SANITIZER_COMPARE_MODE, currentSanitizerCompareMode.name());
-                ps.setValue(PreferenceConstants.ONLY_HAS_CVE, onlyHasCVEChk.getSelection());
-                ps.setValue(PreferenceConstants.INCLUDE_CVE_DETAIL, includeCVEDetailChk.getSelection());
                 ps.setValue(PreferenceConstants.PROXY_TMP_USER, "");
                 ps.setValue(PreferenceConstants.PROXY_TMP_PASS, "");
                 ps.setValue(PreferenceConstants.TSV_STATUS, "");
@@ -313,23 +309,13 @@ public class Main implements PropertyChangeListener {
         Composite assessShell = new Composite(mainTabFolder, SWT.NONE);
         assessShell.setLayout(new GridLayout(1, false));
 
-        subTabFolder = new CTabFolder(assessShell, SWT.NONE);
-        GridData tabFolderGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        subTabFolder.setLayoutData(tabFolderGrDt);
-        subTabFolder.setSelectionBackground(new Color[] { display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND), display.getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW) },
-                new int[] { 100 }, true);
-
-        // #################### Sanitizer #################### //
-        CTabItem vulTabItem = new CTabItem(subTabFolder, SWT.NONE);
-        vulTabItem.setText("Sanitizer");
-
         // ========== グループ ==========
-        Composite vulButtonGrp = new Composite(subTabFolder, SWT.NULL);
+        Composite vulButtonGrp = new Composite(assessShell, SWT.NULL);
         GridLayout buttonGrpLt = new GridLayout(1, false);
         buttonGrpLt.marginWidth = 10;
         buttonGrpLt.marginHeight = 10;
         vulButtonGrp.setLayout(buttonGrpLt);
-        GridData buttonGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        GridData buttonGrpGrDt = new GridData(GridData.FILL_BOTH);
         // buttonGrpGrDt.horizontalSpan = 3;
         // buttonGrpGrDt.widthHint = 100;
         vulButtonGrp.setLayoutData(buttonGrpGrDt);
@@ -378,31 +364,27 @@ public class Main implements PropertyChangeListener {
             }
         });
 
-        // ========== 一括削除ボタン ==========
+        // ========== 削除ボタン ==========
         Composite deleteGrp = new Composite(vulButtonGrp, SWT.NULL);
         GridLayout deleteGrpLt = new GridLayout(2, false);
         deleteGrpLt.marginWidth = 0;
         deleteGrpLt.marginHeight = 0;
         deleteGrp.setLayout(deleteGrpLt);
         GridData deleteGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        deleteGrpGrDt.heightHint = 70;
+        // deleteGrpGrDt.heightHint = 140;
         deleteGrp.setLayoutData(deleteGrpGrDt);
 
         sanitizerDeleteBtn = new Button(deleteGrp, SWT.PUSH);
         GridData sanitizerDeleteBtnGrDt = new GridData(GridData.FILL_BOTH);
         sanitizerDeleteBtn.setLayoutData(sanitizerDeleteBtnGrDt);
-        sanitizerDeleteBtn.setText("一括削除");
-        sanitizerDeleteBtn.setToolTipText("セキュリティ制御(サニタイザ)の全削除");
-        sanitizerDeleteBtn.setFont(new Font(display, "ＭＳ ゴシック", 11, SWT.NORMAL));
+        sanitizerDeleteBtn.setText("削除対象を表示");
+        sanitizerDeleteBtn.setToolTipText("セキュリティ制御の削除");
+        sanitizerDeleteBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         sanitizerDeleteBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                if (!MessageDialog.openConfirm(shell, "セキュリティ制御(サニタイザ)の一括削除", "セキュリティ制御(サニタイザ)を一括削除します。よろしいですか？")) {
-                    return;
-                }
                 String filterWord = sanitizerFilterWordTxt.getText().trim();
-                SanitizerDeleteWithProgress progress = new SanitizerDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord, currentSanitizerFilterMode,
-                        currentSanitizerCompareMode);
+                SanitizerDeleteWithProgress progress = new SanitizerDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
                 ProgressMonitorDialog progDialog = new SanitizerDeleteProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
@@ -416,14 +398,14 @@ public class Main implements PropertyChangeListener {
                     }
                     String errorMsg = e.getTargetException().getMessage();
                     if (e.getTargetException() instanceof ApiException) {
-                        MessageDialog.openWarning(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                        MessageDialog.openWarning(shell, "セキュリティ制御のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
                     } else if (e.getTargetException() instanceof NonApiException) {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
                     } else if (e.getTargetException() instanceof TsvException) {
-                        MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のエクスポート", errorMsg);
+                        MessageDialog.openInformation(shell, "セキュリティ制御のエクスポート", errorMsg);
                         return;
                     } else {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -437,12 +419,13 @@ public class Main implements PropertyChangeListener {
         deleteCtrlGrpLt.marginHeight = 1;
         deleteCtrlGrp.setLayout(deleteCtrlGrpLt);
         GridData deleteControlGrpGrDt = new GridData(GridData.FILL_BOTH);
-        deleteControlGrpGrDt.heightHint = 70;
+        // deleteControlGrpGrDt.heightHint = 70;
         deleteCtrlGrp.setLayoutData(deleteControlGrpGrDt);
 
         sanitizerFilterWordTxt = new Text(deleteCtrlGrp, SWT.BORDER);
         sanitizerFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
-        sanitizerFilterWordTxt.setMessage("対象の名前を指定してください。(任意)");
+        sanitizerFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
+        sanitizerFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
         sanitizerFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         sanitizerFilterWordTxt.addListener(SWT.FocusIn, new Listener() {
             public void handleEvent(Event e) {
@@ -450,99 +433,9 @@ public class Main implements PropertyChangeListener {
             }
         });
 
-        Composite inExcludeGrp = new Composite(deleteCtrlGrp, SWT.NULL);
-        GridLayout inExcludeGrpLt = new GridLayout(3, false);
-        inExcludeGrpLt.marginWidth = 0;
-        inExcludeGrpLt.marginHeight = 1;
-        inExcludeGrp.setLayout(inExcludeGrpLt);
-        GridData inExcludeGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        inExcludeGrp.setLayoutData(inExcludeGrpGrDt);
-
-        Label cludeLbl = new Label(inExcludeGrp, SWT.LEFT);
-        cludeLbl.setText("この名前を:");
-        GridData cludeLblGrDt = new GridData();
-        cludeLblGrDt.widthHint = 60;
-        cludeLbl.setLayoutData(cludeLblGrDt);
-
-        Button exclude = new Button(inExcludeGrp, SWT.RADIO);
-        exclude.setText("残す");
-        exclude.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                currentSanitizerFilterMode = FilterMode.EXCLUDE;
-            }
-        });
-        Button include = new Button(inExcludeGrp, SWT.RADIO);
-        include.setText("削除");
-        include.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                currentSanitizerFilterMode = FilterMode.INCLUDE;
-            }
-        });
-        FilterMode filterMode = FilterMode.valueOf(ps.getString(PreferenceConstants.SANITIZER_FILTER_MODE));
-        if (filterMode == null || FilterMode.EXCLUDE == filterMode) {
-            exclude.setSelection(true);
-            currentSanitizerFilterMode = FilterMode.EXCLUDE;
-        } else {
-            include.setSelection(true);
-            currentSanitizerFilterMode = FilterMode.INCLUDE;
-        }
-
-        Composite compareGrp = new Composite(deleteCtrlGrp, SWT.NULL);
-        GridLayout compareGrpLt = new GridLayout(4, false);
-        compareGrpLt.marginWidth = 0;
-        compareGrpLt.marginHeight = 1;
-        compareGrp.setLayout(compareGrpLt);
-        GridData compareGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        compareGrp.setLayoutData(compareGrpGrDt);
-
-        Label compareLbl = new Label(compareGrp, SWT.LEFT);
-        compareLbl.setText("比較方法:");
-        GridData compareLblGrDt = new GridData();
-        compareLblGrDt.widthHint = 60;
-        compareLbl.setLayoutData(compareLblGrDt);
-
-        Button startsWith = new Button(compareGrp, SWT.RADIO);
-        startsWith.setText("前方一致");
-        startsWith.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                currentSanitizerCompareMode = CompareMode.STARTSWITH;
-            }
-        });
-        Button endsWith = new Button(compareGrp, SWT.RADIO);
-        endsWith.setText("後方一致");
-        endsWith.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                currentSanitizerCompareMode = CompareMode.ENDSWITH;
-            }
-        });
-        Button contains = new Button(compareGrp, SWT.RADIO);
-        contains.setText("部分一致");
-        contains.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                currentSanitizerCompareMode = CompareMode.CONTAINS;
-            }
-        });
-
-        CompareMode compareMode = CompareMode.valueOf(ps.getString(PreferenceConstants.SANITIZER_COMPARE_MODE));
-        if (compareMode == null || CompareMode.STARTSWITH == compareMode) {
-            startsWith.setSelection(true);
-            currentSanitizerCompareMode = CompareMode.STARTSWITH;
-        } else if (CompareMode.ENDSWITH == compareMode) {
-            endsWith.setSelection(true);
-            currentSanitizerCompareMode = CompareMode.ENDSWITH;
-        } else {
-            contains.setSelection(true);
-            currentSanitizerCompareMode = CompareMode.CONTAINS;
-        }
-
         // ========== インポートボタン ==========
         sanitizerImportBtn = new Button(vulButtonGrp, SWT.PUSH);
-        GridData sanitizerImportBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        GridData sanitizerImportBtnGrDt = new GridData(GridData.FILL_BOTH);
         sanitizerImportBtnGrDt.heightHint = 50;
         sanitizerImportBtnGrDt.horizontalSpan = 2;
         sanitizerImportBtn.setLayoutData(sanitizerImportBtnGrDt);
@@ -562,7 +455,7 @@ public class Main implements PropertyChangeListener {
         // ========== 差分確認ボタン ==========
         sanitizerCompareBtn = new Button(vulButtonGrp, SWT.PUSH);
         GridData sanitizerCompareBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        sanitizerCompareBtnGrDt.heightHint = 30;
+        // sanitizerCompareBtnGrDt.heightHint = 30;
         sanitizerCompareBtnGrDt.horizontalSpan = 2;
         sanitizerCompareBtn.setLayoutData(sanitizerCompareBtnGrDt);
         sanitizerCompareBtn.setText("差分確認");
@@ -592,57 +485,64 @@ public class Main implements PropertyChangeListener {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
                 dialog.setText("出力先フォルダを指定してください。");
                 String dir = dialog.open();
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                try {
+                    String fileName = dir + "\\sanitizer_skeleton.json";
+                    Writer writer = new FileWriter(fileName);
+                    List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("api", "jp.co.contrast.foo(java.lang.String*)");
+                    map.put("language", "Java");
+                    map.put("name", "Sanitaizer_foo");
+                    map.put("type", "SANITIZER or INPUT_VALIDATOR");
+                    map.put("all_rules", true);
+                    mapList.add(map);
+                    Map<String, Object> map2 = new HashMap<String, Object>();
+                    map2.put("api", "jp.co.contrast.foo(java.lang.String*)");
+                    map2.put("language", "Java");
+                    map2.put("name", "Sanitaizer_bar");
+                    map2.put("type", "SANITIZER or INPUT_VALIDATOR");
+                    map2.put("all_rules", false);
+                    String[] array = { "hql-injection", "sql-injection" };
+                    map2.put("rules", Arrays.asList(array));
+                    mapList.add(map2);
+                    gson.toJson(mapList, writer);
+                    writer.close();
+                    MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", String.format("スケルトンJSONファイルを出力しました。\r\n%s", fileName));
+                } catch (Exception e) {
+                    MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", e.getMessage());
+                }
             }
         });
-
-        vulTabItem.setControl(vulButtonGrp);
-
-        // #################### ライブラリ #################### //
-        CTabItem libTabItem = new CTabItem(subTabFolder, SWT.NONE);
-        libTabItem.setText("Input Validator");
-
-        // ========== グループ ==========
-        Composite libButtonGrp = new Composite(subTabFolder, SWT.NULL);
-        GridLayout libButtonGrpLt = new GridLayout(1, false);
-        libButtonGrpLt.marginWidth = 10;
-        libButtonGrpLt.marginHeight = 10;
-        libButtonGrp.setLayout(libButtonGrpLt);
-        GridData libButtonGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        // libButtonGrpGrDt.horizontalSpan = 3;
-        // libButtonGrpGrDt.widthHint = 100;
-        libButtonGrp.setLayoutData(libButtonGrpGrDt);
-
-        // ========== 取得ボタン ==========
-        libExecuteBtn = new Button(libButtonGrp, SWT.PUSH);
-        GridData libExecuteBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        libExecuteBtnGrDt.heightHint = 50;
-        libExecuteBtn.setLayoutData(libExecuteBtnGrDt);
-        libExecuteBtn.setText("取得");
-        libExecuteBtn.setToolTipText("ライブラリ情報を取得し、CSV形式で出力します。");
-        libExecuteBtn.setFont(new Font(display, "ＭＳ ゴシック", 20, SWT.NORMAL));
-        libExecuteBtn.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-            }
-        });
-
-        onlyHasCVEChk = new Button(libButtonGrp, SWT.CHECK);
-        onlyHasCVEChk.setText("CVE（脆弱性）を含むライブラリのみ出力する。");
-        if (this.ps.getBoolean(PreferenceConstants.ONLY_HAS_CVE)) {
-            onlyHasCVEChk.setSelection(true);
-        }
-        includeCVEDetailChk = new Button(libButtonGrp, SWT.CHECK);
-        includeCVEDetailChk.setText("CVEの詳細情報も出力する。（フォルダ出力）");
-        includeCVEDetailChk.setToolTipText("CVEの詳細情報が添付ファイルで出力されます。");
-        if (this.ps.getBoolean(PreferenceConstants.INCLUDE_CVE_DETAIL)) {
-            includeCVEDetailChk.setSelection(true);
-        }
-        libTabItem.setControl(libButtonGrp);
-
-        int sub_idx = this.ps.getInt(PreferenceConstants.OPENED_SUB_TAB_IDX);
-        subTabFolder.setSelection(sub_idx);
 
         assessTabItem.setControl(assessShell);
+
+        // #################### 例外 #################### //
+        CTabItem exceptionTabItem = new CTabItem(mainTabFolder, SWT.NONE);
+        exceptionTabItem.setText("例外");
+
+        Composite exceptionShell = new Composite(mainTabFolder, SWT.NONE);
+        exceptionShell.setLayout(new GridLayout(1, false));
+
+        subExceptionTabFolder = new CTabFolder(exceptionShell, SWT.NONE);
+        GridData subExceptionTabFolderGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        subExceptionTabFolder.setLayoutData(subExceptionTabFolderGrDt);
+        subExceptionTabFolder.setSelectionBackground(new Color[] { display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND), display.getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW) },
+                new int[] { 100 }, true);
+
+        CTabItem codeTabItem = new CTabItem(subExceptionTabFolder, SWT.NONE);
+        codeTabItem.setText("コード");
+
+        CTabItem inputTabItem = new CTabItem(subExceptionTabFolder, SWT.NONE);
+        inputTabItem.setText("入力");
+
+        CTabItem urlTabItem = new CTabItem(subExceptionTabFolder, SWT.NONE);
+        urlTabItem.setText("URL");
+
+        int sub_ex_idx = this.ps.getInt(PreferenceConstants.OPENED_SUB_EX_TAB_IDX);
+        subExceptionTabFolder.setSelection(sub_ex_idx);
+
+        exceptionTabItem.setControl(exceptionShell);
 
         int main_idx = this.ps.getInt(PreferenceConstants.OPENED_MAIN_TAB_IDX);
         mainTabFolder.setSelection(main_idx);

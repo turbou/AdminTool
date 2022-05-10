@@ -37,6 +37,8 @@ public class Control {
     private int id;
     private boolean all_rules;
 
+    private boolean deleteFlg;
+
     public String getApi() {
         return api;
     }
@@ -107,6 +109,14 @@ public class Control {
 
     public void setAll_rules(boolean all_rules) {
         this.all_rules = all_rules;
+    }
+
+    public boolean isDeleteFlg() {
+        return deleteFlg;
+    }
+
+    public void setDeleteFlg(boolean deleteFlg) {
+        this.deleteFlg = deleteFlg;
     }
 
     @Override
