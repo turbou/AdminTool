@@ -330,8 +330,8 @@ public class Main implements PropertyChangeListener {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
                 dialog.setText("出力先フォルダを指定してください。");
                 String dir = dialog.open();
-                SanitizerExportWithProgress progress = new SanitizerExportWithProgress(shell, ps, getValidOrganizations(), dir);
-                ProgressMonitorDialog progDialog = new SanitizerExportProgressMonitorDialog(shell);
+                SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganizations(), dir);
+                ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -379,8 +379,8 @@ public class Main implements PropertyChangeListener {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 String filterWord = sanitizerFilterWordTxt.getText().trim();
-                SanitizerDeleteWithProgress progress = new SanitizerDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
-                ProgressMonitorDialog progDialog = new SanitizerDeleteProgressMonitorDialog(shell);
+                SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
+                ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {

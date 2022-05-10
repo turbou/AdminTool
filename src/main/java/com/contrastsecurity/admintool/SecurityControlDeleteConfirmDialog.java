@@ -44,14 +44,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-public class SanitizerDeleteConfirmDialog extends Dialog {
+public class SecurityControlDeleteConfirmDialog extends Dialog {
 
     private List<com.contrastsecurity.admintool.model.Control> controls;
     private Table controlsTable;
     private List<Button> checkBoxList = new ArrayList<Button>();
     private List<Integer> selectedIdxes = new ArrayList<Integer>();
 
-    public SanitizerDeleteConfirmDialog(Shell parentShell, List<com.contrastsecurity.admintool.model.Control> controls) {
+    public SecurityControlDeleteConfirmDialog(Shell parentShell, List<com.contrastsecurity.admintool.model.Control> controls) {
         super(parentShell);
         this.controls = controls;
     }

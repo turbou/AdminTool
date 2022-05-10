@@ -24,40 +24,35 @@
 package com.contrastsecurity.admintool;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.ControlDeleteApi;
 import com.contrastsecurity.admintool.api.ControlsApi;
 import com.contrastsecurity.admintool.model.Control;
 import com.contrastsecurity.admintool.model.Organization;
 
-public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
+public class SecurityControlImportWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
     private List<Organization> orgs;
-    private String filterWord;
-    private List<Control> targetControls;
+    private String filePath;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SanitizerDeleteWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filterWord) {
+    public SecurityControlImportWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filePath) {
         this.shell = shell;
         this.ps = ps;
         this.orgs = orgs;
-        this.filterWord = filterWord;
-        this.targetControls = new ArrayList<Control>();
+        this.filePath = filePath;
     }
 
     @SuppressWarnings("unchecked")
@@ -79,55 +74,7 @@ public class SanitizerDeleteWithProgress implements IRunnableWithProgress {
                         throw new InterruptedException("キャンセルされました。");
                     }
                     monitor.subTask(String.format("セキュリティ制御を削除...%s", control.getName()));
-                    control.setDeleteFlg(false);
-                    if (!filterWord.isEmpty()) {
-                        if (filterWord.contains("*")) {
-                            String word = filterWord.replace("*", "");
-                            if (filterWord.startsWith("*") && filterWord.endsWith("*")) {
-                                if (control.getName().contains(word)) {
-                                    control.setDeleteFlg(true);
-                                }
-                            } else if (filterWord.endsWith("*")) {
-                                if (control.getName().startsWith(word)) {
-                                    control.setDeleteFlg(true);
-                                }
-                            } else if (filterWord.startsWith("*")) {
-                                if (control.getName().endsWith(word)) {
-                                    control.setDeleteFlg(true);
-                                }
-                            }
-                        } else {
-                            if (control.getName().equals(filterWord)) {
-                                control.setDeleteFlg(true);
-                            }
-                        }
-                        this.targetControls.add(control);
-                    }
                     sub3Monitor.worked(1);
-                }
-                SanitizerDeleteConfirmDialog dialog = new SanitizerDeleteConfirmDialog(shell, this.targetControls);
-                this.shell.getDisplay().syncExec(new Runnable() {
-                    public void run() {
-                        int result = dialog.open();
-                        if (IDialogConstants.OK_ID != result) {
-                            monitor.setCanceled(true);
-                        }
-                    }
-                });
-                if (monitor.isCanceled()) {
-                    return;
-                }
-                List<Integer> selectedIdxes = dialog.getSelectedIdxes();
-                if (selectedIdxes.isEmpty()) {
-                    monitor.setCanceled(true);
-                }
-                if (monitor.isCanceled()) {
-                    return;
-                }
-                for (Integer index : selectedIdxes) {
-                    Control control = this.targetControls.get(index);
-                    Api controlDeleteApi = new ControlDeleteApi(this.shell, this.ps, org, control.getId());
-                    controlDeleteApi.delete();
                 }
                 sub3Monitor.done();
                 Thread.sleep(500);

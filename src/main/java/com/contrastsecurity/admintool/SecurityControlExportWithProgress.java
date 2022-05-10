@@ -46,7 +46,7 @@ import com.contrastsecurity.admintool.model.Organization;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class SanitizerExportWithProgress implements IRunnableWithProgress {
+public class SecurityControlExportWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
@@ -55,7 +55,7 @@ public class SanitizerExportWithProgress implements IRunnableWithProgress {
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SanitizerExportWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filePath) {
+    public SecurityControlExportWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filePath) {
         this.shell = shell;
         this.ps = ps;
         this.orgs = orgs;

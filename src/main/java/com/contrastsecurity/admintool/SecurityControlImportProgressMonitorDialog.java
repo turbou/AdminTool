@@ -3,9 +3,9 @@ package com.contrastsecurity.admintool;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.swt.widgets.Shell;
 
-public class SanitizerImportProgressMonitorDialog extends ProgressMonitorDialog {
+public class SecurityControlImportProgressMonitorDialog extends ProgressMonitorDialog {
 
-    public SanitizerImportProgressMonitorDialog(Shell parent) {
+    public SecurityControlImportProgressMonitorDialog(Shell parent) {
         super(parent);
     }
 
