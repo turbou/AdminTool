@@ -74,8 +74,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.yaml.snakeyaml.Yaml;
 
-import com.contrastsecurity.admintool.SanitizerDeleteWithProgress.CompareMode;
-import com.contrastsecurity.admintool.SanitizerDeleteWithProgress.FilterMode;
 import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.exception.NonApiException;
 import com.contrastsecurity.admintool.exception.TsvException;
@@ -159,9 +157,6 @@ public class Main implements PropertyChangeListener {
             e.printStackTrace();
         }
         try {
-            this.ps.setDefault(PreferenceConstants.SANITIZER_FILTER_MODE, FilterMode.EXCLUDE.name());
-            this.ps.setDefault(PreferenceConstants.SANITIZER_COMPARE_MODE, CompareMode.STARTSWITH.name());
-
             this.ps.setDefault(PreferenceConstants.TSV_STATUS, TsvStatusEnum.NONE.name());
             this.ps.setDefault(PreferenceConstants.PROXY_AUTH, "none");
             this.ps.setDefault(PreferenceConstants.CONNECTION_TIMEOUT, 3000);
