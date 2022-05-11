@@ -306,7 +306,7 @@ public class Main implements PropertyChangeListener {
 
         // ========== グループ ==========
         Composite vulButtonGrp = new Composite(assessShell, SWT.NULL);
-        GridLayout buttonGrpLt = new GridLayout(1, false);
+        GridLayout buttonGrpLt = new GridLayout(2, false);
         buttonGrpLt.marginWidth = 10;
         buttonGrpLt.marginHeight = 10;
         vulButtonGrp.setLayout(buttonGrpLt);
@@ -366,6 +366,7 @@ public class Main implements PropertyChangeListener {
         deleteGrpLt.marginHeight = 0;
         deleteGrp.setLayout(deleteGrpLt);
         GridData deleteGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        deleteGrpGrDt.horizontalSpan = 2;
         // deleteGrpGrDt.heightHint = 140;
         deleteGrp.setLayoutData(deleteGrpGrDt);
 
@@ -469,11 +470,10 @@ public class Main implements PropertyChangeListener {
         // ========== スケルトン生成ボタン ==========
         sanitizerSkeletonBtn = new Button(vulButtonGrp, SWT.PUSH);
         GridData executeBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        executeBtnGrDt.horizontalSpan = 2;
         sanitizerSkeletonBtn.setLayoutData(executeBtnGrDt);
         sanitizerSkeletonBtn.setText("スケルトンJSON出力");
         sanitizerSkeletonBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
-        sanitizerSkeletonBtn.setFont(new Font(display, "ＭＳ ゴシック", 11, SWT.NORMAL));
+        sanitizerSkeletonBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         sanitizerSkeletonBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -507,6 +507,21 @@ public class Main implements PropertyChangeListener {
                 } catch (Exception e) {
                     MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", e.getMessage());
                 }
+            }
+        });
+        // Label icon = new Label(vulButtonGrp, SWT.NONE);
+        // Image iconImg = new Image(shell.getDisplay(), Main.class.getClassLoader().getResourceAsStream("help.png"));
+        // icon.setImage(iconImg);
+        // icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
+
+        Button rulesShowBtn = new Button(vulButtonGrp, SWT.PUSH);
+        rulesShowBtn.setText("ルール一覧");
+        rulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        rulesShowBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                RulesShowDialog rulesShowDialog = new RulesShowDialog(shell);
+                rulesShowDialog.open();
             }
         });
 
