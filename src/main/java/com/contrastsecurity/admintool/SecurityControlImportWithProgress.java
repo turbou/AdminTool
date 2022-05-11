@@ -23,21 +23,26 @@
 
 package com.contrastsecurity.admintool;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.ControlsApi;
-import com.contrastsecurity.admintool.model.Control;
+import com.contrastsecurity.admintool.api.SecurityControlCreateSanitizerApi;
 import com.contrastsecurity.admintool.model.Organization;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class SecurityControlImportWithProgress implements IRunnableWithProgress {
 
@@ -55,28 +60,34 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         this.filePath = filePath;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("セキュリティ制御の削除...", 100 * this.orgs.size());
+        monitor.beginTask("セキュリティ制御のインポート...", 100 * this.orgs.size());
         Thread.sleep(300);
+        List<Map<String, Object>> mapList = null;
+        try {
+            Reader reader = Files.newBufferedReader(Paths.get(filePath));
+            mapList = new Gson().fromJson(reader, new TypeToken<List<Map<String, String>>>() {
+            }.getType());
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
         for (Organization org : this.orgs) {
             try {
                 monitor.setTaskName(org.getName());
                 // アプリケーション一覧を取得
-                monitor.subTask("セキュリティ制御の情報を取得...");
-                Api controlsApi = new ControlsApi(this.shell, this.ps, org);
-                List<Control> controls = (List<Control>) controlsApi.get();
-                SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
-                sub3Monitor.beginTask("", controls.size());
-                for (Control control : controls) {
+                for (Map<String, Object> map : mapList) {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("キャンセルされました。");
                     }
-                    monitor.subTask(String.format("セキュリティ制御を削除...%s", control.getName()));
-                    sub3Monitor.worked(1);
+                    monitor.subTask(String.format("セキュリティ制御をインポート...%s", map.get("name")));
+                    Api api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
+                    String msg = (String) api.post();
+                    System.out.println(msg);
+                    if (Boolean.valueOf(msg)) {
+
+                    }
                 }
-                sub3Monitor.done();
                 Thread.sleep(500);
             } catch (Exception e) {
                 throw new InvocationTargetException(e);

@@ -61,10 +61,10 @@ public class RulesShowDialog extends Dialog {
         column0.setWidth(0);
         column0.setResizable(false);
         TableColumn column1 = new TableColumn(table, SWT.LEFT);
-        column1.setWidth(200);
+        column1.setWidth(250);
         column1.setText("日本語名");
         TableColumn column2 = new TableColumn(table, SWT.LEFT);
-        column2.setWidth(200);
+        column2.setWidth(250);
         column2.setText("設定値");
         addColTable("DynamoDBのNoSQLインジェクション", "nosql-injection-dynamodb");
         addColTable("ELインジェクション", "expression-language-injection");
@@ -95,6 +95,8 @@ public class RulesShowDialog extends Dialog {
         item.setText(1, name);
         TableEditor editor2 = new TableEditor(table);
         Text text = new Text(table, SWT.NONE);
+        text.setEditable(false);
+        text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         text.setText(value);
         text.addMouseListener(new MouseAdapter() {
@@ -122,7 +124,7 @@ public class RulesShowDialog extends Dialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(480, 560);
+        return new Point(520, 560);
     }
 
     @Override

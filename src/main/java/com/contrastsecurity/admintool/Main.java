@@ -110,16 +110,24 @@ public class Main implements PropertyChangeListener {
 
     private AdminToolShell shell;
 
+    private List<Button> actionBtns;
     private CTabFolder mainTabFolder;
-    // 例外のサブタブ
-    private CTabFolder subExceptionTabFolder;
 
-    private Button sanitizerExportBtn;
-    private Button sanitizerDeleteBtn;
-    private Text sanitizerFilterWordTxt;
-    private Button sanitizerImportBtn;
-    private Button sanitizerCompareBtn;
-    private Button sanitizerSkeletonBtn;
+    private Button scExpBtn;
+    private Button scDelBtn;
+    private Text scFilterWordTxt;
+    private Button scImpBtn;
+    private Button scCmpBtn;
+    private Button scSklBtn;
+    private Button rulesShowBtn;
+
+    private Button exExpBtn;
+    private Button exDelBtn;
+    private Text exFilterWordTxt;
+    private Button exImpBtn;
+    private Button exCmpBtn;
+    private Button exSklBtn;
+    private Button rulesExceptionShowBtn;
 
     private Button settingBtn;
 
@@ -128,8 +136,6 @@ public class Main implements PropertyChangeListener {
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     Logger logger = LogManager.getLogger("csvdltool");
-
-    String currentTitle;
 
     /**
      * @param args
@@ -153,6 +159,7 @@ public class Main implements PropertyChangeListener {
                 this.ps = new PreferenceStore("admintool.properties");
                 this.ps.load();
             }
+            this.actionBtns = new ArrayList<Button>();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -217,12 +224,10 @@ public class Main implements PropertyChangeListener {
             @Override
             public void shellClosed(ShellEvent event) {
                 int main_idx = mainTabFolder.getSelectionIndex();
-                int sub_ex_idx = subExceptionTabFolder.getSelectionIndex();
                 ps.setValue(PreferenceConstants.OPENED_MAIN_TAB_IDX, main_idx);
-                ps.setValue(PreferenceConstants.OPENED_SUB_EX_TAB_IDX, sub_ex_idx);
                 ps.setValue(PreferenceConstants.MEM_WIDTH, shell.getSize().x);
                 ps.setValue(PreferenceConstants.MEM_HEIGHT, shell.getSize().y);
-                ps.setValue(PreferenceConstants.SANITIZER_FILTER_WORD, sanitizerFilterWordTxt.getText());
+                ps.setValue(PreferenceConstants.SANITIZER_FILTER_WORD, scFilterWordTxt.getText());
                 ps.setValue(PreferenceConstants.PROXY_TMP_USER, "");
                 ps.setValue(PreferenceConstants.PROXY_TMP_PASS, "");
                 ps.setValue(PreferenceConstants.TSV_STATUS, "");
@@ -237,17 +242,12 @@ public class Main implements PropertyChangeListener {
             public void shellActivated(ShellEvent event) {
                 List<Organization> orgs = getValidOrganizations();
                 if (orgs.isEmpty()) {
+                    actionBtns.forEach(b -> b.setEnabled(false));
                     settingBtn.setText("このボタンから基本設定を行ってください。");
-                    currentTitle = "";
                     uiReset();
                 } else {
+                    actionBtns.forEach(b -> b.setEnabled(true));
                     settingBtn.setText("設定");
-                    List<String> orgNameList = new ArrayList<String>();
-                    String title = String.join(", ", orgNameList);
-                    if (currentTitle != null && !currentTitle.equals(title)) {
-                        uiReset();
-                        currentTitle = title;
-                    }
                 }
                 setWindowTitle();
                 if (ps.getBoolean(PreferenceConstants.PROXY_YUKO) && ps.getString(PreferenceConstants.PROXY_AUTH).equals("input")) {
@@ -316,15 +316,16 @@ public class Main implements PropertyChangeListener {
         vulButtonGrp.setLayoutData(buttonGrpGrDt);
 
         // ========== エクスポートボタン ==========
-        sanitizerExportBtn = new Button(vulButtonGrp, SWT.PUSH);
+        scExpBtn = new Button(vulButtonGrp, SWT.PUSH);
         GridData sanitizerExportBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
         sanitizerExportBtnGrDt.heightHint = 30;
         sanitizerExportBtnGrDt.horizontalSpan = 2;
-        sanitizerExportBtn.setLayoutData(sanitizerExportBtnGrDt);
-        sanitizerExportBtn.setText("エクスポート");
-        sanitizerExportBtn.setToolTipText("セキュリティ制御(サニタイザ)のエクスポート");
-        sanitizerExportBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
-        sanitizerExportBtn.addSelectionListener(new SelectionAdapter() {
+        scExpBtn.setLayoutData(sanitizerExportBtnGrDt);
+        scExpBtn.setText("エクスポート");
+        scExpBtn.setToolTipText("セキュリティ制御(サニタイザ)のエクスポート");
+        scExpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
+        actionBtns.add(scExpBtn);
+        scExpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
@@ -370,16 +371,17 @@ public class Main implements PropertyChangeListener {
         // deleteGrpGrDt.heightHint = 140;
         deleteGrp.setLayoutData(deleteGrpGrDt);
 
-        sanitizerDeleteBtn = new Button(deleteGrp, SWT.PUSH);
+        scDelBtn = new Button(deleteGrp, SWT.PUSH);
         GridData sanitizerDeleteBtnGrDt = new GridData(GridData.FILL_BOTH);
-        sanitizerDeleteBtn.setLayoutData(sanitizerDeleteBtnGrDt);
-        sanitizerDeleteBtn.setText("削除対象を表示");
-        sanitizerDeleteBtn.setToolTipText("セキュリティ制御の削除");
-        sanitizerDeleteBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
-        sanitizerDeleteBtn.addSelectionListener(new SelectionAdapter() {
+        scDelBtn.setLayoutData(sanitizerDeleteBtnGrDt);
+        scDelBtn.setText("削除対象を表示");
+        scDelBtn.setToolTipText("セキュリティ制御の削除");
+        scDelBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        actionBtns.add(scDelBtn);
+        scDelBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                String filterWord = sanitizerFilterWordTxt.getText().trim();
+                String filterWord = scFilterWordTxt.getText().trim();
                 SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
                 ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell);
                 try {
@@ -418,46 +420,56 @@ public class Main implements PropertyChangeListener {
         // deleteControlGrpGrDt.heightHint = 70;
         deleteCtrlGrp.setLayoutData(deleteControlGrpGrDt);
 
-        sanitizerFilterWordTxt = new Text(deleteCtrlGrp, SWT.BORDER);
-        sanitizerFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
-        sanitizerFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
-        sanitizerFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
-        sanitizerFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        sanitizerFilterWordTxt.addListener(SWT.FocusIn, new Listener() {
+        scFilterWordTxt = new Text(deleteCtrlGrp, SWT.BORDER);
+        scFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
+        scFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
+        scFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
+        scFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        scFilterWordTxt.addListener(SWT.FocusIn, new Listener() {
             public void handleEvent(Event e) {
-                sanitizerFilterWordTxt.selectAll();
+                scFilterWordTxt.selectAll();
             }
         });
 
         // ========== インポートボタン ==========
-        sanitizerImportBtn = new Button(vulButtonGrp, SWT.PUSH);
+        scImpBtn = new Button(vulButtonGrp, SWT.PUSH);
         GridData sanitizerImportBtnGrDt = new GridData(GridData.FILL_BOTH);
         sanitizerImportBtnGrDt.heightHint = 50;
         sanitizerImportBtnGrDt.horizontalSpan = 2;
-        sanitizerImportBtn.setLayoutData(sanitizerImportBtnGrDt);
-        sanitizerImportBtn.setText("インポート");
-        sanitizerImportBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
-        sanitizerImportBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
-        sanitizerImportBtn.addSelectionListener(new SelectionAdapter() {
+        scImpBtn.setLayoutData(sanitizerImportBtnGrDt);
+        scImpBtn.setText("インポート");
+        scImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
+        scImpBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
+        actionBtns.add(scImpBtn);
+        scImpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dialog = new FileDialog(shell);
                 dialog.setText("インポートするjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
                 String file = dialog.open();
+                SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganizations(), file);
+                ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
         // ========== 差分確認ボタン ==========
-        sanitizerCompareBtn = new Button(vulButtonGrp, SWT.PUSH);
+        scCmpBtn = new Button(vulButtonGrp, SWT.PUSH);
         GridData sanitizerCompareBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
         // sanitizerCompareBtnGrDt.heightHint = 30;
         sanitizerCompareBtnGrDt.horizontalSpan = 2;
-        sanitizerCompareBtn.setLayoutData(sanitizerCompareBtnGrDt);
-        sanitizerCompareBtn.setText("差分確認");
-        sanitizerCompareBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
-        sanitizerCompareBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
-        sanitizerCompareBtn.addSelectionListener(new SelectionAdapter() {
+        scCmpBtn.setLayoutData(sanitizerCompareBtnGrDt);
+        scCmpBtn.setText("差分確認");
+        scCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
+        scCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
+        actionBtns.add(scCmpBtn);
+        scCmpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dialog = new FileDialog(shell);
@@ -468,13 +480,13 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== スケルトン生成ボタン ==========
-        sanitizerSkeletonBtn = new Button(vulButtonGrp, SWT.PUSH);
+        scSklBtn = new Button(vulButtonGrp, SWT.PUSH);
         GridData executeBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        sanitizerSkeletonBtn.setLayoutData(executeBtnGrDt);
-        sanitizerSkeletonBtn.setText("スケルトンJSON出力");
-        sanitizerSkeletonBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
-        sanitizerSkeletonBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
-        sanitizerSkeletonBtn.addSelectionListener(new SelectionAdapter() {
+        scSklBtn.setLayoutData(executeBtnGrDt);
+        scSklBtn.setText("スケルトンJSON出力");
+        scSklBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
+        scSklBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        scSklBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
@@ -514,9 +526,10 @@ public class Main implements PropertyChangeListener {
         // icon.setImage(iconImg);
         // icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
 
-        Button rulesShowBtn = new Button(vulButtonGrp, SWT.PUSH);
+        rulesShowBtn = new Button(vulButtonGrp, SWT.PUSH);
         rulesShowBtn.setText("ルール一覧");
         rulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        actionBtns.add(rulesShowBtn);
         rulesShowBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -534,23 +547,239 @@ public class Main implements PropertyChangeListener {
         Composite exceptionShell = new Composite(mainTabFolder, SWT.NONE);
         exceptionShell.setLayout(new GridLayout(1, false));
 
-        subExceptionTabFolder = new CTabFolder(exceptionShell, SWT.NONE);
-        GridData subExceptionTabFolderGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        subExceptionTabFolder.setLayoutData(subExceptionTabFolderGrDt);
-        subExceptionTabFolder.setSelectionBackground(new Color[] { display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND), display.getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW) },
-                new int[] { 100 }, true);
+        // ========== グループ ==========
+        Composite exButtonGrp = new Composite(exceptionShell, SWT.NULL);
+        GridLayout exButtonGrpLt = new GridLayout(2, false);
+        exButtonGrpLt.marginWidth = 10;
+        exButtonGrpLt.marginHeight = 10;
+        exButtonGrp.setLayout(exButtonGrpLt);
+        GridData exButtonGrpGrDt = new GridData(GridData.FILL_BOTH);
+        // exButtonGrpGrDt.horizontalSpan = 3;
+        // exButtonGrpGrDt.widthHint = 100;
+        exButtonGrp.setLayoutData(exButtonGrpGrDt);
 
-        CTabItem codeTabItem = new CTabItem(subExceptionTabFolder, SWT.NONE);
-        codeTabItem.setText("コード");
+        // ========== エクスポートボタン ==========
+        exExpBtn = new Button(exButtonGrp, SWT.PUSH);
+        GridData exceptionExportBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        exceptionExportBtnGrDt.heightHint = 30;
+        exceptionExportBtnGrDt.horizontalSpan = 2;
+        exExpBtn.setLayoutData(exceptionExportBtnGrDt);
+        exExpBtn.setText("エクスポート");
+        exExpBtn.setToolTipText("セキュリティ制御(サニタイザ)のエクスポート");
+        exExpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
+        actionBtns.add(exExpBtn);
+        exExpBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                DirectoryDialog dialog = new DirectoryDialog(shell);
+                dialog.setText("出力先フォルダを指定してください。");
+                String dir = dialog.open();
+                SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganizations(), dir);
+                ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    StringWriter stringWriter = new StringWriter();
+                    PrintWriter printWriter = new PrintWriter(stringWriter);
+                    e.printStackTrace(printWriter);
+                    String trace = stringWriter.toString();
+                    if (!(e.getTargetException() instanceof TsvException)) {
+                        logger.error(trace);
+                    }
+                    String errorMsg = e.getTargetException().getMessage();
+                    if (e.getTargetException() instanceof ApiException) {
+                        MessageDialog.openWarning(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                    } else if (e.getTargetException() instanceof NonApiException) {
+                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                    } else if (e.getTargetException() instanceof TsvException) {
+                        MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のエクスポート", errorMsg);
+                        return;
+                    } else {
+                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-        CTabItem inputTabItem = new CTabItem(subExceptionTabFolder, SWT.NONE);
-        inputTabItem.setText("入力");
+        // ========== 削除ボタン ==========
+        Composite deleteExGrp = new Composite(exButtonGrp, SWT.NULL);
+        GridLayout deleteExGrpLt = new GridLayout(2, false);
+        deleteExGrpLt.marginWidth = 0;
+        deleteExGrpLt.marginHeight = 0;
+        deleteExGrp.setLayout(deleteExGrpLt);
+        GridData deleteExGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        deleteExGrpGrDt.horizontalSpan = 2;
+        // deleteExGrpGrDt.heightHint = 140;
+        deleteExGrp.setLayoutData(deleteExGrpGrDt);
 
-        CTabItem urlTabItem = new CTabItem(subExceptionTabFolder, SWT.NONE);
-        urlTabItem.setText("URL");
+        exDelBtn = new Button(deleteExGrp, SWT.PUSH);
+        GridData exceptionDeleteBtnGrDt = new GridData(GridData.FILL_BOTH);
+        exDelBtn.setLayoutData(exceptionDeleteBtnGrDt);
+        exDelBtn.setText("削除対象を表示");
+        exDelBtn.setToolTipText("セキュリティ制御の削除");
+        exDelBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        actionBtns.add(exDelBtn);
+        exDelBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                String filterWord = exFilterWordTxt.getText().trim();
+                SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
+                ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    StringWriter stringWriter = new StringWriter();
+                    PrintWriter printWriter = new PrintWriter(stringWriter);
+                    e.printStackTrace(printWriter);
+                    String trace = stringWriter.toString();
+                    if (!(e.getTargetException() instanceof TsvException)) {
+                        logger.error(trace);
+                    }
+                    String errorMsg = e.getTargetException().getMessage();
+                    if (e.getTargetException() instanceof ApiException) {
+                        MessageDialog.openWarning(shell, "セキュリティ制御のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                    } else if (e.getTargetException() instanceof NonApiException) {
+                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                    } else if (e.getTargetException() instanceof TsvException) {
+                        MessageDialog.openInformation(shell, "セキュリティ制御のエクスポート", errorMsg);
+                        return;
+                    } else {
+                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-        int sub_ex_idx = this.ps.getInt(PreferenceConstants.OPENED_SUB_EX_TAB_IDX);
-        subExceptionTabFolder.setSelection(sub_ex_idx);
+        Composite deleteExceptionCtrlGrp = new Composite(deleteExGrp, SWT.NULL);
+        GridLayout deleteExceptionCtrlGrpLt = new GridLayout(1, false);
+        deleteExceptionCtrlGrpLt.marginWidth = 0;
+        deleteExceptionCtrlGrpLt.marginHeight = 1;
+        deleteExceptionCtrlGrp.setLayout(deleteExceptionCtrlGrpLt);
+        GridData deleteExceptionCtrlGrpGrDt = new GridData(GridData.FILL_BOTH);
+        // deleteExceptionCtrlGrpGrDt.heightHint = 70;
+        deleteExceptionCtrlGrp.setLayoutData(deleteExceptionCtrlGrpGrDt);
+
+        exFilterWordTxt = new Text(deleteExceptionCtrlGrp, SWT.BORDER);
+        exFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
+        exFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
+        exFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
+        exFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        exFilterWordTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                exFilterWordTxt.selectAll();
+            }
+        });
+
+        // ========== インポートボタン ==========
+        exImpBtn = new Button(exButtonGrp, SWT.PUSH);
+        GridData exceptionImportBtnGrDt = new GridData(GridData.FILL_BOTH);
+        exceptionImportBtnGrDt.heightHint = 50;
+        exceptionImportBtnGrDt.horizontalSpan = 2;
+        exImpBtn.setLayoutData(exceptionImportBtnGrDt);
+        exImpBtn.setText("インポート");
+        exImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
+        exImpBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
+        actionBtns.add(exImpBtn);
+        exImpBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                FileDialog dialog = new FileDialog(shell);
+                dialog.setText("インポートするjsonファイルを指定してください。");
+                dialog.setFilterExtensions(new String[] { "*.json" });
+                String file = dialog.open();
+                SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganizations(), file);
+                ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // ========== 差分確認ボタン ==========
+        exCmpBtn = new Button(exButtonGrp, SWT.PUSH);
+        GridData exceptionCompareBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        // exceptionCompareBtnGrDt.heightHint = 30;
+        exceptionCompareBtnGrDt.horizontalSpan = 2;
+        exCmpBtn.setLayoutData(exceptionCompareBtnGrDt);
+        exCmpBtn.setText("差分確認");
+        exCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
+        exCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
+        actionBtns.add(exCmpBtn);
+        exCmpBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                FileDialog dialog = new FileDialog(shell);
+                dialog.setText("比較する対象のjsonファイルを指定してください。");
+                dialog.setFilterExtensions(new String[] { "*.json" });
+                String file = dialog.open();
+            }
+        });
+
+        // ========== スケルトン生成ボタン ==========
+        exSklBtn = new Button(exButtonGrp, SWT.PUSH);
+        GridData exceptionSkeletonBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        exSklBtn.setLayoutData(exceptionSkeletonBtnGrDt);
+        exSklBtn.setText("スケルトンJSON出力");
+        exSklBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
+        exSklBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        exSklBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                DirectoryDialog dialog = new DirectoryDialog(shell);
+                dialog.setText("出力先フォルダを指定してください。");
+                String dir = dialog.open();
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                try {
+                    String fileName = dir + "\\sanitizer_skeleton.json";
+                    Writer writer = new FileWriter(fileName);
+                    List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("api", "jp.co.contrast.foo(java.lang.String*)");
+                    map.put("language", "Java");
+                    map.put("name", "Sanitaizer_foo");
+                    map.put("type", "SANITIZER or INPUT_VALIDATOR");
+                    map.put("all_rules", true);
+                    mapList.add(map);
+                    Map<String, Object> map2 = new HashMap<String, Object>();
+                    map2.put("api", "jp.co.contrast.foo(java.lang.String*)");
+                    map2.put("language", "Java");
+                    map2.put("name", "Sanitaizer_bar");
+                    map2.put("type", "SANITIZER or INPUT_VALIDATOR");
+                    map2.put("all_rules", false);
+                    String[] array = { "hql-injection", "sql-injection" };
+                    map2.put("rules", Arrays.asList(array));
+                    mapList.add(map2);
+                    gson.toJson(mapList, writer);
+                    writer.close();
+                    MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", String.format("スケルトンJSONファイルを出力しました。\r\n%s", fileName));
+                } catch (Exception e) {
+                    MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", e.getMessage());
+                }
+            }
+        });
+        // Label icon = new Label(vulButtonGrp, SWT.NONE);
+        // Image iconImg = new Image(shell.getDisplay(), Main.class.getClassLoader().getResourceAsStream("help.png"));
+        // icon.setImage(iconImg);
+        // icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
+
+        rulesExceptionShowBtn = new Button(exButtonGrp, SWT.PUSH);
+        rulesExceptionShowBtn.setText("ルール一覧");
+        rulesExceptionShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        actionBtns.add(rulesExceptionShowBtn);
+        rulesExceptionShowBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                RulesShowDialog rulesShowDialog = new RulesShowDialog(shell);
+                rulesShowDialog.open();
+            }
+        });
 
         exceptionTabItem.setControl(exceptionShell);
 

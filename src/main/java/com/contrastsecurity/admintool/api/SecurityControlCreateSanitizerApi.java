@@ -24,6 +24,10 @@
 package com.contrastsecurity.admintool.api;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -33,27 +37,49 @@ import com.contrastsecurity.admintool.model.Organization;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class ControlDeleteApi extends Api {
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
-    private int id;
+public class SecurityControlCreateSanitizerApi extends Api {
 
-    public ControlDeleteApi(Shell shell, IPreferenceStore ps, Organization org, int id) {
+    private Map<String, Object> map;
+
+    public SecurityControlCreateSanitizerApi(Shell shell, IPreferenceStore ps, Organization org, Map<String, Object> map) {
         super(shell, ps, org);
-        this.id = id;
+        this.map = map;
     }
 
     @Override
     protected String getUrl() {
         String orgId = this.org.getOrganization_uuid();
-        return String.format("%s/api/ng/%s/controls/%d/?expand=skip_links", this.contrastUrl, orgId, id);
+        return String.format("%s/api/ng/%s/controls/sanitizers?expand=skip_links", this.contrastUrl, orgId);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected RequestBody getBody() {
+        MediaType mediaTypeJson = MediaType.parse("application/json; charset=UTF-8");
+        String name = (String) this.map.get("name");
+        String api = (String) this.map.get("api");
+        String language = (String) this.map.get("language");
+        boolean all_rules = Boolean.valueOf((String) this.map.get("all_rules"));
+        List<String> rules = null;
+        if (!all_rules) {
+            rules = (List<String>) this.map.get("rules");
+        } else {
+            rules = new ArrayList<String>();
+        }
+        String json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":\"%s\", \"rules\":\"[%s]\"}", name, api, language,
+                String.valueOf(all_rules), rules.stream().collect(Collectors.joining("\",\"", "\"", "\"")));
+        return RequestBody.create(json, mediaTypeJson);
     }
 
     @Override
     protected Object convert(String response) {
         Gson gson = new Gson();
-        Type contrastType = new TypeToken<ContrastJson>() {
+        Type contType = new TypeToken<ContrastJson>() {
         }.getType();
-        ContrastJson contrastJson = gson.fromJson(response, contrastType);
+        ContrastJson contrastJson = gson.fromJson(response, contType);
         return contrastJson.getSuccess();
     }
 

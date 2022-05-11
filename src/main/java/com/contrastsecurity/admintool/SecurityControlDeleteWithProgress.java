@@ -37,8 +37,8 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.ControlDeleteApi;
-import com.contrastsecurity.admintool.api.ControlsApi;
+import com.contrastsecurity.admintool.api.SecurityControlDeleteApi;
+import com.contrastsecurity.admintool.api.SecurityControlsApi;
 import com.contrastsecurity.admintool.model.Control;
 import com.contrastsecurity.admintool.model.Organization;
 
@@ -70,7 +70,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
                 monitor.setTaskName(org.getName());
                 // アプリケーション一覧を取得
                 monitor.subTask("セキュリティ制御の情報を取得...");
-                Api controlsApi = new ControlsApi(this.shell, this.ps, org);
+                Api controlsApi = new SecurityControlsApi(this.shell, this.ps, org);
                 List<Control> controls = (List<Control>) controlsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
@@ -126,7 +126,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
                 }
                 for (Integer index : selectedIdxes) {
                     Control control = this.targetControls.get(index);
-                    Api controlDeleteApi = new ControlDeleteApi(this.shell, this.ps, org, control.getId());
+                    Api controlDeleteApi = new SecurityControlDeleteApi(this.shell, this.ps, org, control.getId());
                     controlDeleteApi.delete();
                 }
                 sub3Monitor.done();

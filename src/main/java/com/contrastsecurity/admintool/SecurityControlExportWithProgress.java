@@ -40,7 +40,7 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.ControlsApi;
+import com.contrastsecurity.admintool.api.SecurityControlsApi;
 import com.contrastsecurity.admintool.model.Control;
 import com.contrastsecurity.admintool.model.Organization;
 import com.google.gson.Gson;
@@ -76,7 +76,7 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
                 monitor.subTask("フィルタの情報を取得...");
                 // アプリケーション一覧を取得
                 monitor.subTask("アプリケーション一覧の情報を取得...");
-                Api applicationsApi = new ControlsApi(this.shell, this.ps, org);
+                Api applicationsApi = new SecurityControlsApi(this.shell, this.ps, org);
                 List<Control> controls = (List<Control>) applicationsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
