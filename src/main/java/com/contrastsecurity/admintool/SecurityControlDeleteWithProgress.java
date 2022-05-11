@@ -101,8 +101,10 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
                                 control.setDeleteFlg(true);
                             }
                         }
-                        this.targetControls.add(control);
+                    } else {
+                        control.setDeleteFlg(true);
                     }
+                    this.targetControls.add(control);
                     sub3Monitor.worked(1);
                 }
                 SecurityControlDeleteConfirmDialog dialog = new SecurityControlDeleteConfirmDialog(shell, this.targetControls);

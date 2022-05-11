@@ -75,7 +75,6 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         for (Organization org : this.orgs) {
             try {
                 monitor.setTaskName(org.getName());
-                // アプリケーション一覧を取得
                 for (Map<String, Object> map : mapList) {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("キャンセルされました。");
@@ -83,7 +82,6 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                     monitor.subTask(String.format("セキュリティ制御をインポート...%s", map.get("name")));
                     Api api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
                     String msg = (String) api.post();
-                    System.out.println(msg);
                     if (Boolean.valueOf(msg)) {
 
                     }

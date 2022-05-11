@@ -151,7 +151,7 @@ public class BasePreferencePage extends PreferencePage {
         Label icon = new Label(baseGrp, SWT.NONE);
         Image iconImg = new Image(parent.getDisplay(), Main.class.getClassLoader().getResourceAsStream("help.png"));
         icon.setImage(iconImg);
-        icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
+        icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはRulesAdmin権限以上が必要です。");
         userNameTxt = new Text(baseGrp, SWT.BORDER);
         userNameTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         userNameTxt.setText(ps.getString(PreferenceConstants.USERNAME));

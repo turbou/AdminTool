@@ -24,7 +24,6 @@
 package com.contrastsecurity.admintool.api;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,14 +62,18 @@ public class SecurityControlCreateSanitizerApi extends Api {
         String api = (String) this.map.get("api");
         String language = (String) this.map.get("language");
         boolean all_rules = Boolean.valueOf((String) this.map.get("all_rules"));
-        List<String> rules = null;
+        String json = null;
         if (!all_rules) {
-            rules = (List<String>) this.map.get("rules");
+            List<String> rules = (List<String>) this.map.get("rules");
+            if (rules.isEmpty()) {
+                json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":true, \"rules\":[]}", name, api, language);
+            } else {
+                json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":false, \"rules\":\"[%s]\"}", name, api, language,
+                        rules.stream().collect(Collectors.joining("\",\"", "\"", "\"")));
+            }
         } else {
-            rules = new ArrayList<String>();
+            json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":true, \"rules\":[]}", name, api, language);
         }
-        String json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":\"%s\", \"rules\":\"[%s]\"}", name, api, language,
-                String.valueOf(all_rules), rules.stream().collect(Collectors.joining("\",\"", "\"", "\"")));
         return RequestBody.create(json, mediaTypeJson);
     }
 

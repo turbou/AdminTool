@@ -81,13 +81,10 @@ import com.contrastsecurity.admintool.model.ContrastSecurityYaml;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.preference.AboutPage;
 import com.contrastsecurity.admintool.preference.BasePreferencePage;
-import com.contrastsecurity.admintool.preference.CSVPreferencePage;
 import com.contrastsecurity.admintool.preference.ConnectionPreferencePage;
-import com.contrastsecurity.admintool.preference.LibCSVColumnPreferencePage;
 import com.contrastsecurity.admintool.preference.MyPreferenceDialog;
 import com.contrastsecurity.admintool.preference.OtherPreferencePage;
 import com.contrastsecurity.admintool.preference.PreferenceConstants;
-import com.contrastsecurity.admintool.preference.VulCSVColumnPreferencePage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -331,6 +328,9 @@ public class Main implements PropertyChangeListener {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
                 dialog.setText("出力先フォルダを指定してください。");
                 String dir = dialog.open();
+                if (dir == null) {
+                    return;
+                }
                 SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganizations(), dir);
                 ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell);
                 try {
@@ -448,6 +448,9 @@ public class Main implements PropertyChangeListener {
                 dialog.setText("インポートするjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
                 String file = dialog.open();
+                if (file == null) {
+                    return;
+                }
                 SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganizations(), file);
                 ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell);
                 try {
@@ -476,6 +479,9 @@ public class Main implements PropertyChangeListener {
                 dialog.setText("比較する対象のjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
                 String file = dialog.open();
+                if (file == null) {
+                    return;
+                }
             }
         });
 
@@ -492,6 +498,9 @@ public class Main implements PropertyChangeListener {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
                 dialog.setText("出力先フォルダを指定してください。");
                 String dir = dialog.open();
+                if (dir == null) {
+                    return;
+                }
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 try {
                     String fileName = dir + "\\sanitizer_skeleton.json";
@@ -798,15 +807,9 @@ public class Main implements PropertyChangeListener {
                 PreferenceNode baseNode = new PreferenceNode("base", new BasePreferencePage());
                 PreferenceNode connectionNode = new PreferenceNode("connection", new ConnectionPreferencePage());
                 PreferenceNode otherNode = new PreferenceNode("other", new OtherPreferencePage());
-                PreferenceNode csvNode = new PreferenceNode("csv", new CSVPreferencePage());
-                PreferenceNode vulCsvColumnNode = new PreferenceNode("vulcsvcolumn", new VulCSVColumnPreferencePage());
-                PreferenceNode libCsvColumnNode = new PreferenceNode("libcsvcolumn", new LibCSVColumnPreferencePage());
                 mgr.addToRoot(baseNode);
                 mgr.addToRoot(connectionNode);
                 mgr.addToRoot(otherNode);
-                mgr.addToRoot(csvNode);
-                mgr.addTo(csvNode.getId(), vulCsvColumnNode);
-                mgr.addTo(csvNode.getId(), libCsvColumnNode);
                 PreferenceNode aboutNode = new PreferenceNode("about", new AboutPage());
                 mgr.addToRoot(aboutNode);
                 PreferenceDialog dialog = new MyPreferenceDialog(shell, mgr);

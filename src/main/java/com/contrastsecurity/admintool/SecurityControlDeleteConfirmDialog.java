@@ -48,6 +48,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
 
     private List<com.contrastsecurity.admintool.model.Control> controls;
     private Table controlsTable;
+    private Label srcCount;
     private List<Button> checkBoxList = new ArrayList<Button>();
     private List<Integer> selectedIdxes = new ArrayList<Integer>();
 
@@ -59,10 +60,17 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        composite.setLayout(new GridLayout(1, false));
+        composite.setLayout(new GridLayout(2, false));
         Label titleLbl = new Label(composite, SWT.LEFT);
+
+        this.srcCount = new Label(composite, SWT.RIGHT);
+        GridData srcCountGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        srcCountGrDt.horizontalAlignment = SWT.RIGHT;
+        this.srcCount.setLayoutData(srcCountGrDt);
+
         controlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
+        tableGrDt.horizontalSpan = 2;
         controlsTable.setLayoutData(tableGrDt);
         controlsTable.setLinesVisible(true);
         controlsTable.setHeaderVisible(true);
@@ -95,13 +103,18 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
             titleLbl.setText("削除対象のセキュリティ制御はありません。");
         } else {
             titleLbl.setText("チェックされているセキュリティ制御が削除対象となります。");
+            this.srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
         }
-        Composite chkButtonGrp = new Composite(composite, SWT.NONE);
-        chkButtonGrp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        chkButtonGrp.setLayout(new GridLayout(2, true));
 
-        final Button allOnBtn = new Button(chkButtonGrp, SWT.NULL);
-        allOnBtn.setLayoutData(new GridData());
+        Composite bottomGrp = new Composite(composite, SWT.NONE);
+        GridData bottomGrpGrDt = new GridData();
+        bottomGrpGrDt.horizontalSpan = 2;
+        bottomGrp.setLayoutData(bottomGrpGrDt);
+        bottomGrp.setLayout(new GridLayout(2, false));
+
+        final Button allOnBtn = new Button(bottomGrp, SWT.NULL);
+        GridData allOnBtnGrDt = new GridData();
+        allOnBtn.setLayoutData(allOnBtnGrDt);
         allOnBtn.setText("すべてオン");
         if (selectedIdxes.isEmpty()) {
             allOnBtn.setEnabled(false);
@@ -117,11 +130,13 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
                 for (Button button : checkBoxList) {
                     button.setSelection(true);
                 }
+                srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
             }
         });
 
-        final Button allOffBtn = new Button(chkButtonGrp, SWT.NULL);
-        allOffBtn.setLayoutData(new GridData());
+        final Button allOffBtn = new Button(bottomGrp, SWT.NULL);
+        GridData allOffBtnGrDt = new GridData();
+        allOffBtn.setLayoutData(allOffBtnGrDt);
         allOffBtn.setText("すべてオフ");
         if (selectedIdxes.isEmpty()) {
             allOffBtn.setEnabled(false);
@@ -133,6 +148,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
                     button.setSelection(false);
                 }
                 selectedIdxes.clear();
+                srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
             }
         });
 
@@ -168,6 +184,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
                         selectedIdxes.add(checkBoxList.indexOf(button));
                     }
                 }
+                srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
             }
         });
         button.pack();
