@@ -12,7 +12,7 @@ public class SecurityControlExportProgressMonitorDialog extends ProgressMonitorD
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("セキュリティ制御(サニタイザ)のエクスポート");
+        newShell.setText("セキュリティ制御のエクスポート");
     }
 
 }
