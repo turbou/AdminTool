@@ -27,10 +27,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,14 +41,11 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.ApplicationsApi;
-import com.contrastsecurity.admintool.api.FilterSeverityApi;
-import com.contrastsecurity.admintool.api.FilterVulnTypeApi;
 import com.contrastsecurity.admintool.api.GroupsApi;
 import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.model.Application;
 import com.contrastsecurity.admintool.model.ApplicationInCustomGroup;
 import com.contrastsecurity.admintool.model.CustomGroup;
-import com.contrastsecurity.admintool.model.Filter;
 import com.contrastsecurity.admintool.model.Organization;
 
 public class AppsGetWithProgress implements IRunnableWithProgress {
@@ -59,8 +54,6 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
     private PreferenceStore ps;
     private List<Organization> orgs;
     private Map<String, AppInfo> fullAppMap;
-    private Set<Filter> severityFilterSet = new LinkedHashSet<Filter>();
-    private Set<Filter> vulnTypeFilterSet = new LinkedHashSet<Filter>();
 
     Logger logger = LogManager.getLogger("admintool");
 
@@ -83,26 +76,6 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
         for (Organization org : this.orgs) {
             try {
                 monitor.setTaskName(org.getName());
-                // フィルタの情報を取得
-                monitor.subTask("フィルタの情報を取得...");
-                SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 10);
-                sub1Monitor.beginTask("", 2);
-                Api filterSeverityApi = new FilterSeverityApi(this.shell, this.ps, org);
-                Api filterVulnTypeApi = new FilterVulnTypeApi(this.shell, this.ps, org);
-                try {
-                    List<Filter> filterSeverities = (List<Filter>) filterSeverityApi.get();
-                    for (Filter filter : filterSeverities) {
-                        severityFilterSet.add(filter);
-                    }
-                    sub1Monitor.worked(1);
-                    List<Filter> filterVulnTypes = (List<Filter>) filterVulnTypeApi.get();
-                    for (Filter filter : filterVulnTypes) {
-                        vulnTypeFilterSet.add(filter);
-                    }
-                    sub1Monitor.worked(1);
-                } catch (ApiException ae) {
-                }
-                sub1Monitor.done();
 
                 // アプリケーショングループの情報を取得
                 monitor.subTask("アプリケーショングループの情報を取得...");
@@ -170,13 +143,6 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
 
     public Map<String, AppInfo> getFullAppMap() {
         return fullAppMap;
-    }
-
-    public Map<FilterEnum, Set<Filter>> getFilterMap() {
-        Map<FilterEnum, Set<Filter>> filterMap = new HashMap<FilterEnum, Set<Filter>>();
-        filterMap.put(FilterEnum.SEVERITY, severityFilterSet);
-        filterMap.put(FilterEnum.VULNTYPE, vulnTypeFilterSet);
-        return filterMap;
     }
 
 }

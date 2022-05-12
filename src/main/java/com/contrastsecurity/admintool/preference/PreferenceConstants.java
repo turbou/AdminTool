@@ -43,20 +43,9 @@ public class PreferenceConstants {
     public static final String SOCKET_TIMEOUT = new String("com.contrastsecurity.csvdltool.socket_timeout");
 
     public static final String SANITIZER_FILTER_WORD = new String("com.contrastsecurity.admindltool.sanitizer_filter_word");
-    public static final String SANITIZER_FILTER_MODE = new String("com.contrastsecurity.admindltool.sanitizer_filter_mode");
-    public static final String SANITIZER_COMPARE_MODE = new String("com.contrastsecurity.admindltool.sanitizer_compare_mode");
 
     public static final String SLEEP_VUL = new String("com.contrastsecurity.csvdltool.sleep_vul");
-
-    public static final String CSV_OUT_HEADER_VUL = new String("com.contrastsecurity.csvdltool.csv_out_header_vul");
-    public static final String CSV_COLUMN_VUL = new String("com.contrastsecurity.csvdltool.csv_out_column_vul");
-    public static final String CSV_FILE_FORMAT_VUL = new String("com.contrastsecurity.csvdltool.csv_file_format_vul");
-
     public static final String SLEEP_LIB = new String("com.contrastsecurity.csvdltool.sleep_lib");
-
-    public static final String CSV_OUT_HEADER_LIB = new String("com.contrastsecurity.csvdltool.csv_out_header_lib");
-    public static final String CSV_COLUMN_LIB = new String("com.contrastsecurity.csvdltool.csv_out_column_lib");
-    public static final String CSV_FILE_FORMAT_LIB = new String("com.contrastsecurity.csvdltool.csv_file_format_lib");
 
     public static final String ATTACK_RANGE_DAYTIME = new String("com.contrastsecurity.csvdltool.attack_range_daytime");
     public static final String ATTACK_RANGE_NIGHTTIME = new String("com.contrastsecurity.csvdltool.attack_range_nighttime");
@@ -66,20 +55,7 @@ public class PreferenceConstants {
     public static final String CSV_COLUMN_ATTACKEVENT = new String("com.contrastsecurity.csvdltool.csv_out_column_attackevent");
     public static final String CSV_FILE_FORMAT_ATTACKEVENT = new String("com.contrastsecurity.csvdltool.csv_file_format_attackevent");
 
-    public static final String CSV_OUT_HEADER_SERVER = new String("com.contrastsecurity.csvdltool.csv_out_header_server");
-    public static final String CSV_COLUMN_SERVER = new String("com.contrastsecurity.csvdltool.csv_out_column_server");
-    public static final String CSV_FILE_FORMAT_SERVER = new String("com.contrastsecurity.csvdltool.csv_file_format_server");
-
-    public static final String VUL_ONLY_PARENT_APP = new String("com.contrastsecurity.csvdltool.only_parent_app_check");
-    public static final String INCLUDE_DESCRIPTION = new String("com.contrastsecurity.csvdltool.include_description");
-    public static final String INCLUDE_STACKTRACE = new String("com.contrastsecurity.csvdltool.include_stacktrace");
-
-    public static final String ONLY_HAS_CVE = new String("com.contrastsecurity.csvdltool.only_has_cve");
-    public static final String INCLUDE_CVE_DETAIL = new String("com.contrastsecurity.csvdltool.include_cve_detail");
-
     public static final String OPENED_MAIN_TAB_IDX = new String("com.contrastsecurity.csvdltool.opened_main_tab_idx");
-    public static final String OPENED_SUB_SC_TAB_IDX = new String("com.contrastsecurity.csvdltool.opened_sub_sc_tab_idx");
-    public static final String OPENED_SUB_EX_TAB_IDX = new String("com.contrastsecurity.csvdltool.opened_sub_ex_tab_idx");
     public static final String MEM_WIDTH = new String("com.contrastsecurity.csvdltool.mem_width");
     public static final String MEM_HEIGHT = new String("com.contrastsecurity.csvdltool.mem_height");
 }

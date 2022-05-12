@@ -173,8 +173,6 @@ public class Main implements PropertyChangeListener {
             this.ps.setDefault(PreferenceConstants.SLEEP_LIB, 300);
 
             this.ps.setDefault(PreferenceConstants.OPENED_MAIN_TAB_IDX, 0);
-            this.ps.setDefault(PreferenceConstants.OPENED_SUB_SC_TAB_IDX, 0);
-            this.ps.setDefault(PreferenceConstants.OPENED_SUB_EX_TAB_IDX, 0);
 
             Yaml yaml = new Yaml();
             InputStream is = new FileInputStream("contrast_security.yaml");
@@ -291,31 +289,31 @@ public class Main implements PropertyChangeListener {
         });
 
         // #################### セキュリティ制御 #################### //
-        CTabItem assessTabItem = new CTabItem(mainTabFolder, SWT.NONE);
-        assessTabItem.setText("セキュリティ制御");
+        CTabItem scTabItem = new CTabItem(mainTabFolder, SWT.NONE);
+        scTabItem.setText("セキュリティ制御");
 
-        Composite assessShell = new Composite(mainTabFolder, SWT.NONE);
-        assessShell.setLayout(new GridLayout(1, false));
+        Composite scShell = new Composite(mainTabFolder, SWT.NONE);
+        scShell.setLayout(new GridLayout(1, false));
 
         // ========== グループ ==========
-        Composite vulButtonGrp = new Composite(assessShell, SWT.NULL);
-        GridLayout buttonGrpLt = new GridLayout(2, false);
-        buttonGrpLt.marginWidth = 10;
-        buttonGrpLt.marginHeight = 10;
-        vulButtonGrp.setLayout(buttonGrpLt);
-        GridData buttonGrpGrDt = new GridData(GridData.FILL_BOTH);
+        Composite scBtnGrp = new Composite(scShell, SWT.NULL);
+        GridLayout scBtnGrpLt = new GridLayout(2, false);
+        scBtnGrpLt.marginWidth = 10;
+        scBtnGrpLt.marginHeight = 10;
+        scBtnGrp.setLayout(scBtnGrpLt);
+        GridData scBtnGrpGrDt = new GridData(GridData.FILL_BOTH);
         // buttonGrpGrDt.horizontalSpan = 3;
         // buttonGrpGrDt.widthHint = 100;
-        vulButtonGrp.setLayoutData(buttonGrpGrDt);
+        scBtnGrp.setLayoutData(scBtnGrpGrDt);
 
         // ========== エクスポートボタン ==========
-        scExpBtn = new Button(vulButtonGrp, SWT.PUSH);
-        GridData sanitizerExportBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        sanitizerExportBtnGrDt.heightHint = 30;
-        sanitizerExportBtnGrDt.horizontalSpan = 2;
-        scExpBtn.setLayoutData(sanitizerExportBtnGrDt);
+        scExpBtn = new Button(scBtnGrp, SWT.PUSH);
+        GridData scExpBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        scExpBtnGrDt.heightHint = 30;
+        scExpBtnGrDt.horizontalSpan = 2;
+        scExpBtn.setLayoutData(scExpBtnGrDt);
         scExpBtn.setText("エクスポート");
-        scExpBtn.setToolTipText("セキュリティ制御(サニタイザ)のエクスポート");
+        scExpBtn.setToolTipText("セキュリティ制御のエクスポート");
         scExpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
         actionBtns.add(scExpBtn);
         scExpBtn.addSelectionListener(new SelectionAdapter() {
@@ -357,19 +355,19 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== 削除ボタン ==========
-        Composite deleteGrp = new Composite(vulButtonGrp, SWT.NULL);
-        GridLayout deleteGrpLt = new GridLayout(2, false);
-        deleteGrpLt.marginWidth = 0;
-        deleteGrpLt.marginHeight = 0;
-        deleteGrp.setLayout(deleteGrpLt);
-        GridData deleteGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        deleteGrpGrDt.horizontalSpan = 2;
+        Composite scDelBtnGrp = new Composite(scBtnGrp, SWT.NULL);
+        GridLayout scDelBtnGrpLt = new GridLayout(2, false);
+        scDelBtnGrpLt.marginWidth = 0;
+        scDelBtnGrpLt.marginHeight = 0;
+        scDelBtnGrp.setLayout(scDelBtnGrpLt);
+        GridData scDelBtnGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        scDelBtnGrpGrDt.horizontalSpan = 2;
         // deleteGrpGrDt.heightHint = 140;
-        deleteGrp.setLayoutData(deleteGrpGrDt);
+        scDelBtnGrp.setLayoutData(scDelBtnGrpGrDt);
 
-        scDelBtn = new Button(deleteGrp, SWT.PUSH);
-        GridData sanitizerDeleteBtnGrDt = new GridData(GridData.FILL_BOTH);
-        scDelBtn.setLayoutData(sanitizerDeleteBtnGrDt);
+        scDelBtn = new Button(scDelBtnGrp, SWT.PUSH);
+        GridData scDelBtnGrDt = new GridData(GridData.FILL_BOTH);
+        scDelBtn.setLayoutData(scDelBtnGrDt);
         scDelBtn.setText("削除対象を表示");
         scDelBtn.setToolTipText("セキュリティ制御の削除");
         scDelBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
@@ -407,16 +405,16 @@ public class Main implements PropertyChangeListener {
             }
         });
 
-        Composite deleteCtrlGrp = new Composite(deleteGrp, SWT.NULL);
-        GridLayout deleteCtrlGrpLt = new GridLayout(1, false);
-        deleteCtrlGrpLt.marginWidth = 0;
-        deleteCtrlGrpLt.marginHeight = 1;
-        deleteCtrlGrp.setLayout(deleteCtrlGrpLt);
-        GridData deleteControlGrpGrDt = new GridData(GridData.FILL_BOTH);
+        Composite scDelCtrlGrp = new Composite(scDelBtnGrp, SWT.NULL);
+        GridLayout scDelCtrlGrpLt = new GridLayout(1, false);
+        scDelCtrlGrpLt.marginWidth = 0;
+        scDelCtrlGrpLt.marginHeight = 1;
+        scDelCtrlGrp.setLayout(scDelCtrlGrpLt);
+        GridData scDelCtrlGrpGrDt = new GridData(GridData.FILL_BOTH);
         // deleteControlGrpGrDt.heightHint = 70;
-        deleteCtrlGrp.setLayoutData(deleteControlGrpGrDt);
+        scDelCtrlGrp.setLayoutData(scDelCtrlGrpGrDt);
 
-        scFilterWordTxt = new Text(deleteCtrlGrp, SWT.BORDER);
+        scFilterWordTxt = new Text(scDelCtrlGrp, SWT.BORDER);
         scFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
         scFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
         scFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
@@ -428,13 +426,13 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== インポートボタン ==========
-        scImpBtn = new Button(vulButtonGrp, SWT.PUSH);
-        GridData sanitizerImportBtnGrDt = new GridData(GridData.FILL_BOTH);
-        sanitizerImportBtnGrDt.heightHint = 50;
-        sanitizerImportBtnGrDt.horizontalSpan = 2;
-        scImpBtn.setLayoutData(sanitizerImportBtnGrDt);
+        scImpBtn = new Button(scBtnGrp, SWT.PUSH);
+        GridData scImpBtnGrDt = new GridData(GridData.FILL_BOTH);
+        scImpBtnGrDt.heightHint = 50;
+        scImpBtnGrDt.horizontalSpan = 2;
+        scImpBtn.setLayoutData(scImpBtnGrDt);
         scImpBtn.setText("インポート");
-        scImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
+        scImpBtn.setToolTipText("セキュリティ制御のインポート");
         scImpBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
         actionBtns.add(scImpBtn);
         scImpBtn.addSelectionListener(new SelectionAdapter() {
@@ -460,11 +458,11 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== 差分確認ボタン ==========
-        scCmpBtn = new Button(vulButtonGrp, SWT.PUSH);
-        GridData sanitizerCompareBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        scCmpBtn = new Button(scBtnGrp, SWT.PUSH);
+        GridData scCmpBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
         // sanitizerCompareBtnGrDt.heightHint = 30;
-        sanitizerCompareBtnGrDt.horizontalSpan = 2;
-        scCmpBtn.setLayoutData(sanitizerCompareBtnGrDt);
+        scCmpBtnGrDt.horizontalSpan = 2;
+        scCmpBtn.setLayoutData(scCmpBtnGrDt);
         scCmpBtn.setText("差分確認");
         scCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
         scCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
@@ -483,11 +481,11 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== スケルトン生成ボタン ==========
-        scSklBtn = new Button(vulButtonGrp, SWT.PUSH);
-        GridData executeBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        scSklBtn.setLayoutData(executeBtnGrDt);
+        scSklBtn = new Button(scBtnGrp, SWT.PUSH);
+        GridData scSklBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        scSklBtn.setLayoutData(scSklBtnGrDt);
         scSklBtn.setText("スケルトンJSON出力");
-        scSklBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
+        scSklBtn.setToolTipText("セキュリティ制御のインポートJSONファイルのスケルトン生成");
         scSklBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         scSklBtn.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -527,12 +525,8 @@ public class Main implements PropertyChangeListener {
                 }
             }
         });
-        // Label icon = new Label(vulButtonGrp, SWT.NONE);
-        // Image iconImg = new Image(shell.getDisplay(), Main.class.getClassLoader().getResourceAsStream("help.png"));
-        // icon.setImage(iconImg);
-        // icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
 
-        scRulesShowBtn = new Button(vulButtonGrp, SWT.PUSH);
+        scRulesShowBtn = new Button(scBtnGrp, SWT.PUSH);
         scRulesShowBtn.setText("ルール一覧");
         scRulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         actionBtns.add(scRulesShowBtn);
@@ -551,32 +545,32 @@ public class Main implements PropertyChangeListener {
             }
         });
 
-        assessTabItem.setControl(assessShell);
+        scTabItem.setControl(scShell);
 
         // #################### 例外 #################### //
-        CTabItem exceptionTabItem = new CTabItem(mainTabFolder, SWT.NONE);
-        exceptionTabItem.setText("例外");
+        CTabItem exTabItem = new CTabItem(mainTabFolder, SWT.NONE);
+        exTabItem.setText("例外");
 
-        Composite exceptionShell = new Composite(mainTabFolder, SWT.NONE);
-        exceptionShell.setLayout(new GridLayout(1, false));
+        Composite exShell = new Composite(mainTabFolder, SWT.NONE);
+        exShell.setLayout(new GridLayout(1, false));
 
         // ========== グループ ==========
-        Composite exButtonGrp = new Composite(exceptionShell, SWT.NULL);
-        GridLayout exButtonGrpLt = new GridLayout(2, false);
-        exButtonGrpLt.marginWidth = 10;
-        exButtonGrpLt.marginHeight = 10;
-        exButtonGrp.setLayout(exButtonGrpLt);
-        GridData exButtonGrpGrDt = new GridData(GridData.FILL_BOTH);
+        Composite exBtnGrp = new Composite(exShell, SWT.NULL);
+        GridLayout exBtnGrpLt = new GridLayout(2, false);
+        exBtnGrpLt.marginWidth = 10;
+        exBtnGrpLt.marginHeight = 10;
+        exBtnGrp.setLayout(exBtnGrpLt);
+        GridData exBtnGrpGrDt = new GridData(GridData.FILL_BOTH);
         // exButtonGrpGrDt.horizontalSpan = 3;
         // exButtonGrpGrDt.widthHint = 100;
-        exButtonGrp.setLayoutData(exButtonGrpGrDt);
+        exBtnGrp.setLayoutData(exBtnGrpGrDt);
 
         // ========== エクスポートボタン ==========
-        exExpBtn = new Button(exButtonGrp, SWT.PUSH);
-        GridData exceptionExportBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        exceptionExportBtnGrDt.heightHint = 30;
-        exceptionExportBtnGrDt.horizontalSpan = 2;
-        exExpBtn.setLayoutData(exceptionExportBtnGrDt);
+        exExpBtn = new Button(exBtnGrp, SWT.PUSH);
+        GridData exExpBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        exExpBtnGrDt.heightHint = 30;
+        exExpBtnGrDt.horizontalSpan = 2;
+        exExpBtn.setLayoutData(exExpBtnGrDt);
         exExpBtn.setText("エクスポート");
         exExpBtn.setToolTipText("セキュリティ制御(サニタイザ)のエクスポート");
         exExpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
@@ -584,52 +578,23 @@ public class Main implements PropertyChangeListener {
         exExpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                DirectoryDialog dialog = new DirectoryDialog(shell);
-                dialog.setText("出力先フォルダを指定してください。");
-                String dir = dialog.open();
-                SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganizations(), dir);
-                ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell);
-                try {
-                    progDialog.run(true, true, progress);
-                } catch (InvocationTargetException e) {
-                    StringWriter stringWriter = new StringWriter();
-                    PrintWriter printWriter = new PrintWriter(stringWriter);
-                    e.printStackTrace(printWriter);
-                    String trace = stringWriter.toString();
-                    if (!(e.getTargetException() instanceof TsvException)) {
-                        logger.error(trace);
-                    }
-                    String errorMsg = e.getTargetException().getMessage();
-                    if (e.getTargetException() instanceof ApiException) {
-                        MessageDialog.openWarning(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
-                    } else if (e.getTargetException() instanceof NonApiException) {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
-                    } else if (e.getTargetException() instanceof TsvException) {
-                        MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のエクスポート", errorMsg);
-                        return;
-                    } else {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
         // ========== 削除ボタン ==========
-        Composite deleteExGrp = new Composite(exButtonGrp, SWT.NULL);
-        GridLayout deleteExGrpLt = new GridLayout(2, false);
-        deleteExGrpLt.marginWidth = 0;
-        deleteExGrpLt.marginHeight = 0;
-        deleteExGrp.setLayout(deleteExGrpLt);
-        GridData deleteExGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        deleteExGrpGrDt.horizontalSpan = 2;
+        Composite exDelGrp = new Composite(exBtnGrp, SWT.NULL);
+        GridLayout exDelGrpLt = new GridLayout(2, false);
+        exDelGrpLt.marginWidth = 0;
+        exDelGrpLt.marginHeight = 0;
+        exDelGrp.setLayout(exDelGrpLt);
+        GridData exDelGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        exDelGrpGrDt.horizontalSpan = 2;
         // deleteExGrpGrDt.heightHint = 140;
-        deleteExGrp.setLayoutData(deleteExGrpGrDt);
+        exDelGrp.setLayoutData(exDelGrpGrDt);
 
-        exDelBtn = new Button(deleteExGrp, SWT.PUSH);
-        GridData exceptionDeleteBtnGrDt = new GridData(GridData.FILL_BOTH);
-        exDelBtn.setLayoutData(exceptionDeleteBtnGrDt);
+        exDelBtn = new Button(exDelGrp, SWT.PUSH);
+        GridData exDelBtnGrDt = new GridData(GridData.FILL_BOTH);
+        exDelBtn.setLayoutData(exDelBtnGrDt);
         exDelBtn.setText("削除対象を表示");
         exDelBtn.setToolTipText("セキュリティ制御の削除");
         exDelBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
@@ -637,46 +602,19 @@ public class Main implements PropertyChangeListener {
         exDelBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                String filterWord = exFilterWordTxt.getText().trim();
-                SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
-                ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell);
-                try {
-                    progDialog.run(true, true, progress);
-                } catch (InvocationTargetException e) {
-                    StringWriter stringWriter = new StringWriter();
-                    PrintWriter printWriter = new PrintWriter(stringWriter);
-                    e.printStackTrace(printWriter);
-                    String trace = stringWriter.toString();
-                    if (!(e.getTargetException() instanceof TsvException)) {
-                        logger.error(trace);
-                    }
-                    String errorMsg = e.getTargetException().getMessage();
-                    if (e.getTargetException() instanceof ApiException) {
-                        MessageDialog.openWarning(shell, "セキュリティ制御のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
-                    } else if (e.getTargetException() instanceof NonApiException) {
-                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
-                    } else if (e.getTargetException() instanceof TsvException) {
-                        MessageDialog.openInformation(shell, "セキュリティ制御のエクスポート", errorMsg);
-                        return;
-                    } else {
-                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
-        Composite deleteExceptionCtrlGrp = new Composite(deleteExGrp, SWT.NULL);
-        GridLayout deleteExceptionCtrlGrpLt = new GridLayout(1, false);
-        deleteExceptionCtrlGrpLt.marginWidth = 0;
-        deleteExceptionCtrlGrpLt.marginHeight = 1;
-        deleteExceptionCtrlGrp.setLayout(deleteExceptionCtrlGrpLt);
-        GridData deleteExceptionCtrlGrpGrDt = new GridData(GridData.FILL_BOTH);
+        Composite exDelCtrlGrp = new Composite(exDelGrp, SWT.NULL);
+        GridLayout exDelCtrlGrpLt = new GridLayout(1, false);
+        exDelCtrlGrpLt.marginWidth = 0;
+        exDelCtrlGrpLt.marginHeight = 1;
+        exDelCtrlGrp.setLayout(exDelCtrlGrpLt);
+        GridData exDelCtrlGrpGrDt = new GridData(GridData.FILL_BOTH);
         // deleteExceptionCtrlGrpGrDt.heightHint = 70;
-        deleteExceptionCtrlGrp.setLayoutData(deleteExceptionCtrlGrpGrDt);
+        exDelCtrlGrp.setLayoutData(exDelCtrlGrpGrDt);
 
-        exFilterWordTxt = new Text(deleteExceptionCtrlGrp, SWT.BORDER);
+        exFilterWordTxt = new Text(exDelCtrlGrp, SWT.BORDER);
         exFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
         exFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
         exFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
@@ -688,11 +626,11 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== インポートボタン ==========
-        exImpBtn = new Button(exButtonGrp, SWT.PUSH);
-        GridData exceptionImportBtnGrDt = new GridData(GridData.FILL_BOTH);
-        exceptionImportBtnGrDt.heightHint = 50;
-        exceptionImportBtnGrDt.horizontalSpan = 2;
-        exImpBtn.setLayoutData(exceptionImportBtnGrDt);
+        exImpBtn = new Button(exBtnGrp, SWT.PUSH);
+        GridData exImpBtnGrDt = new GridData(GridData.FILL_BOTH);
+        exImpBtnGrDt.heightHint = 50;
+        exImpBtnGrDt.horizontalSpan = 2;
+        exImpBtn.setLayoutData(exImpBtnGrDt);
         exImpBtn.setText("インポート");
         exImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
         exImpBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
@@ -700,27 +638,15 @@ public class Main implements PropertyChangeListener {
         exImpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                FileDialog dialog = new FileDialog(shell);
-                dialog.setText("インポートするjsonファイルを指定してください。");
-                dialog.setFilterExtensions(new String[] { "*.json" });
-                String file = dialog.open();
-                SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganizations(), file);
-                ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell);
-                try {
-                    progDialog.run(true, true, progress);
-                } catch (InvocationTargetException e) {
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
         // ========== 差分確認ボタン ==========
-        exCmpBtn = new Button(exButtonGrp, SWT.PUSH);
-        GridData exceptionCompareBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        exCmpBtn = new Button(exBtnGrp, SWT.PUSH);
+        GridData exCmpBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
         // exceptionCompareBtnGrDt.heightHint = 30;
-        exceptionCompareBtnGrDt.horizontalSpan = 2;
-        exCmpBtn.setLayoutData(exceptionCompareBtnGrDt);
+        exCmpBtnGrDt.horizontalSpan = 2;
+        exCmpBtn.setLayoutData(exCmpBtnGrDt);
         exCmpBtn.setText("差分確認");
         exCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
         exCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
@@ -728,60 +654,23 @@ public class Main implements PropertyChangeListener {
         exCmpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                FileDialog dialog = new FileDialog(shell);
-                dialog.setText("比較する対象のjsonファイルを指定してください。");
-                dialog.setFilterExtensions(new String[] { "*.json" });
-                String file = dialog.open();
-                if (file == null) {
-                    return;
-                }
             }
         });
 
         // ========== スケルトン生成ボタン ==========
-        exSklBtn = new Button(exButtonGrp, SWT.PUSH);
-        GridData exceptionSkeletonBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        exSklBtn.setLayoutData(exceptionSkeletonBtnGrDt);
+        exSklBtn = new Button(exBtnGrp, SWT.PUSH);
+        GridData exSklBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        exSklBtn.setLayoutData(exSklBtnGrDt);
         exSklBtn.setText("スケルトンJSON出力");
         exSklBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
         exSklBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         exSklBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                DirectoryDialog dialog = new DirectoryDialog(shell);
-                dialog.setText("出力先フォルダを指定してください。");
-                String dir = dialog.open();
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                try {
-                    String fileName = dir + "\\sanitizer_skeleton.json";
-                    Writer writer = new FileWriter(fileName);
-                    List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("api", "jp.co.contrast.foo(java.lang.String*)");
-                    map.put("language", "Java");
-                    map.put("name", "Sanitaizer_foo");
-                    map.put("type", "SANITIZER or INPUT_VALIDATOR");
-                    map.put("all_rules", true);
-                    mapList.add(map);
-                    Map<String, Object> map2 = new HashMap<String, Object>();
-                    map2.put("api", "jp.co.contrast.foo(java.lang.String*)");
-                    map2.put("language", "Java");
-                    map2.put("name", "Sanitaizer_bar");
-                    map2.put("type", "SANITIZER or INPUT_VALIDATOR");
-                    map2.put("all_rules", false);
-                    String[] array = { "hql-injection", "sql-injection" };
-                    map2.put("rules", Arrays.asList(array));
-                    mapList.add(map2);
-                    gson.toJson(mapList, writer);
-                    writer.close();
-                    MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", String.format("スケルトンJSONファイルを出力しました。\r\n%s", fileName));
-                } catch (Exception e) {
-                    MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", e.getMessage());
-                }
             }
         });
 
-        exRulesShowBtn = new Button(exButtonGrp, SWT.PUSH);
+        exRulesShowBtn = new Button(exBtnGrp, SWT.PUSH);
         exRulesShowBtn.setText("ルール一覧");
         exRulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         actionBtns.add(exRulesShowBtn);
@@ -800,7 +689,7 @@ public class Main implements PropertyChangeListener {
             }
         });
 
-        exceptionTabItem.setControl(exceptionShell);
+        exTabItem.setControl(exShell);
 
         int main_idx = this.ps.getInt(PreferenceConstants.OPENED_MAIN_TAB_IDX);
         mainTabFolder.setSelection(main_idx);
