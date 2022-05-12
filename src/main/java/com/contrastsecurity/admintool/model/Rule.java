@@ -30,6 +30,39 @@ public class Rule {
     private String description;
     private String title;
     private String name;
+    private List<String> languages;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
 
     @Override
     public String toString() {
@@ -37,6 +70,7 @@ public class Rule {
         strList.add("description: " + this.description);
         strList.add("title: " + this.title);
         strList.add("name: " + this.name);
+        strList.add(String.format("languages: %s", String.join(", ", languages)));
         return String.join("\r\n", strList);
     }
 

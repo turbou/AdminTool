@@ -26,7 +26,7 @@ package com.contrastsecurity.admintool.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Control {
+public class SecurityControl {
     private String api;
     private String language;
     private String hash;

@@ -80,7 +80,7 @@ public abstract class Api {
         DELETE
     }
 
-    Logger logger = LogManager.getLogger("csvdltool");
+    Logger logger = LogManager.getLogger("admintool");
 
     protected Shell shell;
     protected IPreferenceStore ps;

@@ -26,23 +26,23 @@ package com.contrastsecurity.admintool.json;
 import java.util.List;
 import java.util.StringJoiner;
 
-import com.contrastsecurity.admintool.model.Control;
+import com.contrastsecurity.admintool.model.SecurityControl;
 
-public class ControlsJson extends ContrastJson {
-    private List<Control> controls;
+public class SecurityControlsJson extends ContrastJson {
+    private List<SecurityControl> controls;
 
-    public List<Control> getControls() {
+    public List<SecurityControl> getControls() {
         return controls;
     }
 
-    public void setControls(List<Control> controls) {
+    public void setControls(List<SecurityControl> controls) {
         this.controls = controls;
     }
 
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner("\r\n");
-        for (Control c : this.controls) {
+        for (SecurityControl c : this.controls) {
             sj.add(c.toString());
         }
         return sj.toString();

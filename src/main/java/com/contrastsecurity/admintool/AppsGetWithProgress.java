@@ -62,7 +62,7 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
     private Set<Filter> severityFilterSet = new LinkedHashSet<Filter>();
     private Set<Filter> vulnTypeFilterSet = new LinkedHashSet<Filter>();
 
-    Logger logger = LogManager.getLogger("csvdltool");
+    Logger logger = LogManager.getLogger("admintool");
 
     public AppsGetWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs) {
         this.shell = shell;

@@ -21,37 +21,31 @@
  * 
  */
 
-package com.contrastsecurity.admintool.api;
+package com.contrastsecurity.admintool.json;
 
-import java.lang.reflect.Type;
+import java.util.List;
+import java.util.StringJoiner;
 
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Shell;
+import com.contrastsecurity.admintool.model.Rule;
 
-import com.contrastsecurity.admintool.json.SecurityControlsJson;
-import com.contrastsecurity.admintool.model.Organization;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+public class RulesJson extends ContrastJson {
+    private List<Rule> rules;
 
-public class SecurityControlsApi extends Api {
+    public List<Rule> getRules() {
+        return rules;
+    }
 
-    public SecurityControlsApi(Shell shell, IPreferenceStore ps, Organization org) {
-        super(shell, ps, org);
+    public void setRules(List<Rule> rules) {
+        this.rules = rules;
     }
 
     @Override
-    protected String getUrl() {
-        String orgId = this.org.getOrganization_uuid();
-        return String.format("%s/api/ng/%s/controls?expand=skip_links&q=&quickFilter=ALL", this.contrastUrl, orgId);
-    }
-
-    @Override
-    protected Object convert(String response) {
-        Gson gson = new Gson();
-        Type controlsType = new TypeToken<SecurityControlsJson>() {
-        }.getType();
-        SecurityControlsJson controlsJson = gson.fromJson(response, controlsType);
-        return controlsJson.getControls();
+    public String toString() {
+        StringJoiner sj = new StringJoiner("\r\n");
+        for (Rule r : this.rules) {
+            sj.add(r.toString());
+        }
+        return sj.toString();
     }
 
 }

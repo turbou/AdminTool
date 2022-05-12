@@ -71,7 +71,7 @@ public class BasePreferencePage extends PreferencePage {
     private Table table;
     private Button addBtn;
 
-    Logger logger = LogManager.getLogger("csvdltool");
+    Logger logger = LogManager.getLogger("admintool");
 
     public BasePreferencePage() {
         super("基本設定");

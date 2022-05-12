@@ -44,15 +44,17 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import com.contrastsecurity.admintool.model.SecurityControl;
+
 public class SecurityControlDeleteConfirmDialog extends Dialog {
 
-    private List<com.contrastsecurity.admintool.model.Control> controls;
+    private List<SecurityControl> controls;
     private Table controlsTable;
     private Label srcCount;
     private List<Button> checkBoxList = new ArrayList<Button>();
     private List<Integer> selectedIdxes = new ArrayList<Integer>();
 
-    public SecurityControlDeleteConfirmDialog(Shell parentShell, List<com.contrastsecurity.admintool.model.Control> controls) {
+    public SecurityControlDeleteConfirmDialog(Shell parentShell, List<SecurityControl> controls) {
         super(parentShell);
         this.controls = controls;
     }
@@ -96,7 +98,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
         column6.setWidth(50);
         column6.setText("有効");
 
-        for (com.contrastsecurity.admintool.model.Control control : controls) {
+        for (SecurityControl control : controls) {
             addColToControlTable(control, -1);
         }
         if (selectedIdxes.isEmpty()) {
@@ -122,7 +124,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
         allOnBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                for (com.contrastsecurity.admintool.model.Control control : controls) {
+                for (SecurityControl control : controls) {
                     if (control.isDeleteFlg()) {
                         selectedIdxes.add(controls.indexOf(control));
                     }
@@ -155,7 +157,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
         return composite;
     }
 
-    private void addColToControlTable(com.contrastsecurity.admintool.model.Control control, int index) {
+    private void addColToControlTable(SecurityControl control, int index) {
         if (control == null) {
             return;
         }

@@ -23,6 +23,8 @@
 
 package com.contrastsecurity.admintool;
 
+import java.util.List;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -40,12 +42,16 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import com.contrastsecurity.admintool.model.Rule;
+
 public class RulesShowDialog extends Dialog {
 
     private Table table;
+    private List<Rule> rules;
 
-    public RulesShowDialog(Shell parentShell) {
+    public RulesShowDialog(Shell parentShell, List<Rule> rules) {
         super(parentShell);
+        this.rules = rules;
     }
 
     @Override
@@ -66,39 +72,23 @@ public class RulesShowDialog extends Dialog {
         TableColumn column2 = new TableColumn(table, SWT.LEFT);
         column2.setWidth(250);
         column2.setText("設定値");
-        addColTable("DynamoDBのNoSQLインジェクション", "nosql-injection-dynamodb");
-        addColTable("ELインジェクション", "expression-language-injection");
-        addColTable("HQLインジェクション", "hql-injection");
-        addColTable("LDAPインジェクション", "ldap-injection");
-        addColTable("NoSQLインジェクション", "nosql-injection");
-        addColTable("OSコマンドインジェクション", "cmd-injection");
-        addColTable("SMTPインジェクション", "smtp-injection");
-        addColTable("SQLインジェクション", "sql-injection");
-        addColTable("XML外部実体参照(XXE)", "xxe");
-        addColTable("XPathインジェクション", "xpath-injection");
-        addColTable("クロスサイトスクリプティング", "reflected-xss");
-        addColTable("サーバサイドリクエストフォージェリ(SSRF)", "ssrf");
-        addColTable("パストラバーサル", "path-traversal");
-        addColTable("リフレクションインジェクション", "reflection-injection");
-        addColTable("任意に実行されるサーバサイドの転送", "unvalidated-forward");
-        addColTable("信頼できないストリームでのreadLineの使用", "unsafe-readline");
-        addColTable("信頼できないデータのデシリアライゼーション", "untrusted-deserialization");
-        addColTable("信頼境界線違反", "trust-boundary-violation");
-        addColTable("安全ではないXMLデコード", "unsafe-xml-decode");
-        addColTable("未検証のリダイレクト", "unvalidated-redirect");
-        addColTable("格納型クロスサイトスクリプティング", "stored-xss");
+        TableColumn column3 = new TableColumn(table, SWT.LEFT);
+        column3.setWidth(350);
+        column3.setText("対応言語");
+        this.rules.forEach(r -> addColTable(r));
         return composite;
     }
 
-    private void addColTable(String name, String value) {
+    private void addColTable(Rule rule) {
         TableItem item = new TableItem(table, SWT.LEFT);
-        item.setText(1, name);
+        item.setText(1, rule.getTitle());
         TableEditor editor2 = new TableEditor(table);
+        TableEditor editor3 = new TableEditor(table);
         Text text = new Text(table, SWT.NONE);
         text.setEditable(false);
         text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        text.setText(value);
+        text.setText(rule.getName());
         text.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
@@ -110,6 +100,21 @@ public class RulesShowDialog extends Dialog {
         editor2.horizontalAlignment = SWT.LEFT;
         editor2.setEditor(text, item, 2);
 
+        Text text2 = new Text(table, SWT.NONE);
+        text2.setEditable(false);
+        text2.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        text2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text2.setText(String.join(", ", rule.getLanguages()));
+        text2.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                text2.selectAll();
+            }
+        });
+        text2.pack();
+        editor3.grabHorizontal = true;
+        editor3.horizontalAlignment = SWT.LEFT;
+        editor3.setEditor(text2, item, 3);
     }
 
     @Override
@@ -124,7 +129,7 @@ public class RulesShowDialog extends Dialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(520, 560);
+        return new Point(720, 560);
     }
 
     @Override

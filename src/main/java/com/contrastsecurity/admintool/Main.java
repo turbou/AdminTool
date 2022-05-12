@@ -74,11 +74,14 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.yaml.snakeyaml.Yaml;
 
+import com.contrastsecurity.admintool.api.Api;
+import com.contrastsecurity.admintool.api.RulesApi;
 import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.exception.NonApiException;
 import com.contrastsecurity.admintool.exception.TsvException;
 import com.contrastsecurity.admintool.model.ContrastSecurityYaml;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.Rule;
 import com.contrastsecurity.admintool.preference.AboutPage;
 import com.contrastsecurity.admintool.preference.BasePreferencePage;
 import com.contrastsecurity.admintool.preference.ConnectionPreferencePage;
@@ -116,7 +119,7 @@ public class Main implements PropertyChangeListener {
     private Button scImpBtn;
     private Button scCmpBtn;
     private Button scSklBtn;
-    private Button rulesShowBtn;
+    private Button scRulesShowBtn;
 
     private Button exExpBtn;
     private Button exDelBtn;
@@ -124,7 +127,7 @@ public class Main implements PropertyChangeListener {
     private Button exImpBtn;
     private Button exCmpBtn;
     private Button exSklBtn;
-    private Button rulesExceptionShowBtn;
+    private Button exRulesShowBtn;
 
     private Button settingBtn;
 
@@ -132,7 +135,7 @@ public class Main implements PropertyChangeListener {
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    Logger logger = LogManager.getLogger("csvdltool");
+    Logger logger = LogManager.getLogger("admintool");
 
     /**
      * @param args
@@ -166,15 +169,8 @@ public class Main implements PropertyChangeListener {
             this.ps.setDefault(PreferenceConstants.CONNECTION_TIMEOUT, 3000);
             this.ps.setDefault(PreferenceConstants.SOCKET_TIMEOUT, 3000);
 
-            this.ps.setDefault(PreferenceConstants.CSV_COLUMN_VUL, VulCSVColmunEnum.defaultValuesStr());
             this.ps.setDefault(PreferenceConstants.SLEEP_VUL, 300);
-            this.ps.setDefault(PreferenceConstants.CSV_OUT_HEADER_VUL, true);
-            this.ps.setDefault(PreferenceConstants.CSV_FILE_FORMAT_VUL, "'vul'_yyyy-MM-dd_HHmmss");
-
-            this.ps.setDefault(PreferenceConstants.CSV_COLUMN_LIB, LibCSVColmunEnum.defaultValuesStr());
             this.ps.setDefault(PreferenceConstants.SLEEP_LIB, 300);
-            this.ps.setDefault(PreferenceConstants.CSV_OUT_HEADER_LIB, true);
-            this.ps.setDefault(PreferenceConstants.CSV_FILE_FORMAT_LIB, "'lib'_yyyy-MM-dd_HHmmss");
 
             this.ps.setDefault(PreferenceConstants.OPENED_MAIN_TAB_IDX, 0);
             this.ps.setDefault(PreferenceConstants.OPENED_SUB_SC_TAB_IDX, 0);
@@ -535,15 +531,22 @@ public class Main implements PropertyChangeListener {
         // icon.setImage(iconImg);
         // icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
 
-        rulesShowBtn = new Button(vulButtonGrp, SWT.PUSH);
-        rulesShowBtn.setText("ルール一覧");
-        rulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
-        actionBtns.add(rulesShowBtn);
-        rulesShowBtn.addSelectionListener(new SelectionAdapter() {
+        scRulesShowBtn = new Button(vulButtonGrp, SWT.PUSH);
+        scRulesShowBtn.setText("ルール一覧");
+        scRulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        actionBtns.add(scRulesShowBtn);
+        scRulesShowBtn.addSelectionListener(new SelectionAdapter() {
+            @SuppressWarnings({ "unchecked" })
             @Override
             public void widgetSelected(SelectionEvent e) {
-                RulesShowDialog rulesShowDialog = new RulesShowDialog(shell);
-                rulesShowDialog.open();
+                Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
+                try {
+                    List<Rule> rules = (List<Rule>) rulesApi.get();
+                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, rules);
+                    rulesShowDialog.open();
+                } catch (Exception e2) {
+                    MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));
+                }
             }
         });
 
@@ -728,6 +731,9 @@ public class Main implements PropertyChangeListener {
                 dialog.setText("比較する対象のjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
                 String file = dialog.open();
+                if (file == null) {
+                    return;
+                }
             }
         });
 
@@ -773,20 +779,23 @@ public class Main implements PropertyChangeListener {
                 }
             }
         });
-        // Label icon = new Label(vulButtonGrp, SWT.NONE);
-        // Image iconImg = new Image(shell.getDisplay(), Main.class.getClassLoader().getResourceAsStream("help.png"));
-        // icon.setImage(iconImg);
-        // icon.setToolTipText("設定するユーザーの権限について\r\n・組織ロールはView権限以上が必要です。\r\n・Admin権限を持つユーザーの場合、アプリケーショングループの情報も取得できます。\r\n・アプリケーションアクセスグループはView権限以上が必要です。");
 
-        rulesExceptionShowBtn = new Button(exButtonGrp, SWT.PUSH);
-        rulesExceptionShowBtn.setText("ルール一覧");
-        rulesExceptionShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
-        actionBtns.add(rulesExceptionShowBtn);
-        rulesExceptionShowBtn.addSelectionListener(new SelectionAdapter() {
+        exRulesShowBtn = new Button(exButtonGrp, SWT.PUSH);
+        exRulesShowBtn.setText("ルール一覧");
+        exRulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
+        actionBtns.add(exRulesShowBtn);
+        exRulesShowBtn.addSelectionListener(new SelectionAdapter() {
+            @SuppressWarnings("unchecked")
             @Override
             public void widgetSelected(SelectionEvent e) {
-                RulesShowDialog rulesShowDialog = new RulesShowDialog(shell);
-                rulesShowDialog.open();
+                Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
+                try {
+                    List<Rule> rules = (List<Rule>) rulesApi.get();
+                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, rules);
+                    rulesShowDialog.open();
+                } catch (Exception e2) {
+                    MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));
+                }
             }
         });
 
@@ -913,7 +922,6 @@ public class Main implements PropertyChangeListener {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if ("tsv".equals(event.getPropertyName())) {

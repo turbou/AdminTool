@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlsApi;
-import com.contrastsecurity.admintool.model.Control;
+import com.contrastsecurity.admintool.model.SecurityControl;
 import com.contrastsecurity.admintool.model.Organization;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -77,11 +77,11 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
                 // アプリケーション一覧を取得
                 monitor.subTask("アプリケーション一覧の情報を取得...");
                 Api applicationsApi = new SecurityControlsApi(this.shell, this.ps, org);
-                List<Control> controls = (List<Control>) applicationsApi.get();
+                List<SecurityControl> controls = (List<SecurityControl>) applicationsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
                 List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
-                for (Control control : controls) {
+                for (SecurityControl control : controls) {
                     monitor.subTask(String.format("アプリケーション一覧の情報を取得...%s", control.getName()));
                     Map<String, Object> map = new HashMap<String, Object>();
                     map.put("all_rules", Boolean.valueOf(control.isAll_rules()));

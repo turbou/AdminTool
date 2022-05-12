@@ -39,7 +39,7 @@ import org.eclipse.swt.widgets.Shell;
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlDeleteApi;
 import com.contrastsecurity.admintool.api.SecurityControlsApi;
-import com.contrastsecurity.admintool.model.Control;
+import com.contrastsecurity.admintool.model.SecurityControl;
 import com.contrastsecurity.admintool.model.Organization;
 
 public class SecurityControlDeleteWithProgress implements IRunnableWithProgress {
@@ -48,7 +48,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
     private PreferenceStore ps;
     private List<Organization> orgs;
     private String filterWord;
-    private List<Control> targetControls;
+    private List<SecurityControl> targetControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
@@ -57,7 +57,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
         this.ps = ps;
         this.orgs = orgs;
         this.filterWord = filterWord;
-        this.targetControls = new ArrayList<Control>();
+        this.targetControls = new ArrayList<SecurityControl>();
     }
 
     @SuppressWarnings("unchecked")
@@ -71,10 +71,10 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
                 // アプリケーション一覧を取得
                 monitor.subTask("セキュリティ制御の情報を取得...");
                 Api controlsApi = new SecurityControlsApi(this.shell, this.ps, org);
-                List<Control> controls = (List<Control>) controlsApi.get();
+                List<SecurityControl> controls = (List<SecurityControl>) controlsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
-                for (Control control : controls) {
+                for (SecurityControl control : controls) {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("キャンセルされました。");
                     }
@@ -127,7 +127,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
                     return;
                 }
                 for (Integer index : selectedIdxes) {
-                    Control control = this.targetControls.get(index);
+                    SecurityControl control = this.targetControls.get(index);
                     Api controlDeleteApi = new SecurityControlDeleteApi(this.shell, this.ps, org, control.getId());
                     controlDeleteApi.delete();
                 }
