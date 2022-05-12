@@ -39,11 +39,11 @@ import com.google.gson.reflect.TypeToken;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
-public class SecurityControlCreateSanitizerApi extends Api {
+public class SecurityControlCreateValidatorApi extends Api {
 
     private Map<String, Object> map;
 
-    public SecurityControlCreateSanitizerApi(Shell shell, IPreferenceStore ps, Organization org, Map<String, Object> map) {
+    public SecurityControlCreateValidatorApi(Shell shell, IPreferenceStore ps, Organization org, Map<String, Object> map) {
         super(shell, ps, org);
         this.map = map;
     }
@@ -51,7 +51,7 @@ public class SecurityControlCreateSanitizerApi extends Api {
     @Override
     protected String getUrl() {
         String orgId = this.org.getOrganization_uuid();
-        return String.format("%s/api/ng/%s/controls/sanitizers?expand=skip_links", this.contrastUrl, orgId);
+        return String.format("%s/api/ng/%s/controls/validators?expand=skip_links", this.contrastUrl, orgId);
     }
 
     @SuppressWarnings("unchecked")

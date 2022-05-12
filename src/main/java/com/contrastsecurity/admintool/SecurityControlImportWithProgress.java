@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlCreateSanitizerApi;
+import com.contrastsecurity.admintool.api.SecurityControlCreateValidatorApi;
 import com.contrastsecurity.admintool.model.Organization;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -67,7 +68,7 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         List<Map<String, Object>> mapList = null;
         try {
             Reader reader = Files.newBufferedReader(Paths.get(filePath));
-            mapList = new Gson().fromJson(reader, new TypeToken<List<Map<String, String>>>() {
+            mapList = new Gson().fromJson(reader, new TypeToken<List<Map<String, Object>>>() {
             }.getType());
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -80,7 +81,15 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                         throw new InterruptedException("キャンセルされました。");
                     }
                     monitor.subTask(String.format("セキュリティ制御をインポート...%s", map.get("name")));
-                    Api api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
+                    String type = (String) map.getOrDefault("type", "");
+                    Api api = null;
+                    if (type.equals("SANITIZER")) {
+                        api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
+                    } else if (type.equals("INPUT_VALIDATOR")) {
+                        api = new SecurityControlCreateValidatorApi(shell, this.ps, org, map);
+                    } else {
+                        continue;
+                    }
                     String msg = (String) api.post();
                     if (Boolean.valueOf(msg)) {
 

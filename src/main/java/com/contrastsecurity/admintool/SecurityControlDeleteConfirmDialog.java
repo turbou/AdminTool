@@ -215,7 +215,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(480, 360);
+        return new Point(640, 480);
     }
 
     @Override

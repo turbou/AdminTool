@@ -452,6 +452,7 @@ public class Main implements PropertyChangeListener {
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
+                    e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
