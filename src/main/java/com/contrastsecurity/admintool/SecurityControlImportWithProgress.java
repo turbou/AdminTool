@@ -108,6 +108,7 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                             this.failureControls.add(new SecurityControl(map));
                         }
                     } catch (ApiException apie) {
+                        map.put("remarks", apie.getMessage());
                         this.failureControls.add(new SecurityControl(map));
                     }
                 }
