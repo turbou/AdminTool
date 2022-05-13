@@ -25,6 +25,7 @@ package com.contrastsecurity.admintool.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SecurityControl {
     private String api;
@@ -38,6 +39,24 @@ public class SecurityControl {
     private boolean all_rules;
 
     private boolean deleteFlg;
+    private String remarks;
+
+    public SecurityControl() {
+    }
+
+    public SecurityControl(Map<String, Object> map) {
+        String name = (String) map.get("name");
+        String api = (String) map.get("api");
+        String language = (String) map.get("language");
+        boolean all_rules = ((Boolean) map.get("all_rules"));
+        this.name = name;
+        this.api = api;
+        this.language = language;
+        this.all_rules = all_rules;
+        if (map.containsKey("remarks")) {
+            this.remarks = (String) map.get("remarks");
+        }
+    }
 
     public String getApi() {
         return api;
@@ -117,6 +136,17 @@ public class SecurityControl {
 
     public void setDeleteFlg(boolean deleteFlg) {
         this.deleteFlg = deleteFlg;
+    }
+
+    public String getRemarks() {
+        if (remarks == null) {
+            return "";
+        }
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     @Override

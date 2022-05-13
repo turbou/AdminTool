@@ -226,6 +226,6 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("セキュリティ制御(サニタイザ)の一括削除");
+        newShell.setText("セキュリティ制御の削除");
     }
 }

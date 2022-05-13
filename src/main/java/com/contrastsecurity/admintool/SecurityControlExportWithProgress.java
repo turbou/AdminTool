@@ -41,8 +41,8 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlsApi;
-import com.contrastsecurity.admintool.model.SecurityControl;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -88,6 +88,7 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
                     map.put("api", control.getApi());
                     map.put("language", control.getLanguage());
                     map.put("name", control.getName());
+                    map.put("type", control.getType());
                     mapList.add(map);
                     sub3Monitor.worked(1);
                 }

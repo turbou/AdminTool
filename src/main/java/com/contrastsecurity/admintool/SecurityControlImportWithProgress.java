@@ -28,12 +28,14 @@ import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -41,7 +43,9 @@ import org.eclipse.swt.widgets.Shell;
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlCreateSanitizerApi;
 import com.contrastsecurity.admintool.api.SecurityControlCreateValidatorApi;
+import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -51,6 +55,8 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
     private PreferenceStore ps;
     private List<Organization> orgs;
     private String filePath;
+    private List<SecurityControl> successControls;
+    private List<SecurityControl> failureControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
@@ -59,6 +65,8 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         this.ps = ps;
         this.orgs = orgs;
         this.filePath = filePath;
+        this.successControls = new ArrayList<SecurityControl>();
+        this.failureControls = new ArrayList<SecurityControl>();
     }
 
     @Override
@@ -83,16 +91,24 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                     monitor.subTask(String.format("セキュリティ制御をインポート...%s", map.get("name")));
                     String type = (String) map.getOrDefault("type", "");
                     Api api = null;
-                    if (type.equals("SANITIZER")) {
-                        api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
-                    } else if (type.equals("INPUT_VALIDATOR")) {
-                        api = new SecurityControlCreateValidatorApi(shell, this.ps, org, map);
-                    } else {
-                        continue;
-                    }
-                    String msg = (String) api.post();
-                    if (Boolean.valueOf(msg)) {
-
+                    try {
+                        if (type.equals("SANITIZER")) {
+                            api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
+                        } else if (type.equals("INPUT_VALIDATOR")) {
+                            api = new SecurityControlCreateValidatorApi(shell, this.ps, org, map);
+                        } else {
+                            map.put("remarks", String.format("セキュリティ制御のタイプが判別できません。%s", type));
+                            this.failureControls.add(new SecurityControl(map));
+                            continue;
+                        }
+                        String msg = (String) api.post();
+                        if (Boolean.valueOf(msg)) {
+                            this.successControls.add(new SecurityControl(map));
+                        } else {
+                            this.failureControls.add(new SecurityControl(map));
+                        }
+                    } catch (ApiException apie) {
+                        this.failureControls.add(new SecurityControl(map));
                     }
                 }
                 Thread.sleep(500);
@@ -101,5 +117,15 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
             }
         }
         monitor.done();
+        SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.successControls, this.failureControls);
+        this.shell.getDisplay().syncExec(new Runnable() {
+            public void run() {
+                int result = dialog.open();
+                if (IDialogConstants.OK_ID != result) {
+                    monitor.setCanceled(true);
+                }
+            }
+        });
+
     }
 }
