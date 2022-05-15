@@ -76,8 +76,8 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
                 monitor.subTask("フィルタの情報を取得...");
                 // アプリケーション一覧を取得
                 monitor.subTask("アプリケーション一覧の情報を取得...");
-                Api applicationsApi = new SecurityControlsApi(this.shell, this.ps, org);
-                List<SecurityControl> controls = (List<SecurityControl>) applicationsApi.get();
+                Api securityControlsApi = new SecurityControlsApi(this.shell, this.ps, org);
+                List<SecurityControl> controls = (List<SecurityControl>) securityControlsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
                 List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
