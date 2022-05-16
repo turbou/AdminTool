@@ -26,10 +26,7 @@ package com.contrastsecurity.admintool;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +38,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlsApi;
+import com.contrastsecurity.admintool.json.RuleSerializer;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.Rule;
 import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -80,20 +79,8 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
                 List<SecurityControl> controls = (List<SecurityControl>) securityControlsApi.get();
                 SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
                 sub3Monitor.beginTask("", controls.size());
-                List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
-                for (SecurityControl control : controls) {
-                    monitor.subTask(String.format("アプリケーション一覧の情報を取得...%s", control.getName()));
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("all_rules", Boolean.valueOf(control.isAll_rules()));
-                    map.put("api", control.getApi());
-                    map.put("language", control.getLanguage());
-                    map.put("name", control.getName());
-                    map.put("type", control.getType());
-                    mapList.add(map);
-                    sub3Monitor.worked(1);
-                }
                 sub3Monitor.done();
-                gson.toJson(mapList, writer);
+                gson.toJson(controls, writer);
                 writer.close();
                 Thread.sleep(500);
             } catch (Exception e) {

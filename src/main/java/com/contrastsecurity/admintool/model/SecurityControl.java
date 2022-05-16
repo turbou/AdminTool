@@ -27,18 +27,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.annotations.Expose;
+
 public class SecurityControl {
+    @Expose(serialize = true)
     private String api;
+    @Expose(serialize = true)
     private String language;
-    private String hash;
+    @Expose(serialize = true)
     private String name;
-    private boolean enabled;
+    @Expose(serialize = true)
     private String type;
+    @Expose(serialize = true)
     private List<Rule> rules;
-    private int id;
+    @Expose(serialize = true)
     private boolean all_rules;
 
+    @Expose(serialize = false)
+    private int id;
+    @Expose(serialize = false)
+    private String hash;
+    @Expose(serialize = false)
+    private boolean enabled;
+
+    @Expose(serialize = false)
     private boolean deleteFlg;
+    @Expose(serialize = false)
     private String remarks;
 
     public SecurityControl() {
