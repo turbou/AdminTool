@@ -477,6 +477,15 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
+                SecurityControlCompareWithProgress progress = new SecurityControlCompareWithProgress(shell, ps, getValidOrganizations(), file);
+                ProgressMonitorDialog progDialog = new SecurityControlCompareProgressMonitorDialog(shell);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
