@@ -86,7 +86,6 @@ import com.contrastsecurity.admintool.preference.AboutPage;
 import com.contrastsecurity.admintool.preference.BasePreferencePage;
 import com.contrastsecurity.admintool.preference.ConnectionPreferencePage;
 import com.contrastsecurity.admintool.preference.MyPreferenceDialog;
-import com.contrastsecurity.admintool.preference.OtherPreferencePage;
 import com.contrastsecurity.admintool.preference.PreferenceConstants;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -714,10 +713,8 @@ public class Main implements PropertyChangeListener {
                 PreferenceManager mgr = new PreferenceManager();
                 PreferenceNode baseNode = new PreferenceNode("base", new BasePreferencePage());
                 PreferenceNode connectionNode = new PreferenceNode("connection", new ConnectionPreferencePage());
-                PreferenceNode otherNode = new PreferenceNode("other", new OtherPreferencePage());
                 mgr.addToRoot(baseNode);
                 mgr.addToRoot(connectionNode);
-                mgr.addToRoot(otherNode);
                 PreferenceNode aboutNode = new PreferenceNode("about", new AboutPage());
                 mgr.addToRoot(aboutNode);
                 PreferenceDialog dialog = new MyPreferenceDialog(shell, mgr);
