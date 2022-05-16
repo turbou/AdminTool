@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,9 +43,11 @@ import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlCreateSanitizerApi;
 import com.contrastsecurity.admintool.api.SecurityControlCreateValidatorApi;
 import com.contrastsecurity.admintool.exception.ApiException;
+import com.contrastsecurity.admintool.json.RuleDeserializer;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.Rule;
 import com.contrastsecurity.admintool.model.SecurityControl;
-import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class SecurityControlImportWithProgress implements IRunnableWithProgress {
@@ -73,10 +74,12 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         monitor.beginTask("セキュリティ制御のインポート...", 100 * this.orgs.size());
         Thread.sleep(300);
-        List<Map<String, Object>> mapList = null;
+        List<SecurityControl> mapList = null;
         try {
             Reader reader = Files.newBufferedReader(Paths.get(filePath));
-            mapList = new Gson().fromJson(reader, new TypeToken<List<Map<String, Object>>>() {
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(Rule.class, new RuleDeserializer());
+            mapList = gsonBuilder.create().fromJson(reader, new TypeToken<List<SecurityControl>>() {
             }.getType());
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -84,32 +87,32 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         for (Organization org : this.orgs) {
             try {
                 monitor.setTaskName(org.getName());
-                for (Map<String, Object> map : mapList) {
+                for (SecurityControl control : mapList) {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("キャンセルされました。");
                     }
-                    monitor.subTask(String.format("セキュリティ制御をインポート...%s", map.get("name")));
-                    String type = (String) map.getOrDefault("type", "");
+                    monitor.subTask(String.format("セキュリティ制御をインポート...%s", control.getName()));
+                    String type = control.getType();
                     Api api = null;
                     try {
                         if (type.equals("SANITIZER")) {
-                            api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, map);
+                            api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, control);
                         } else if (type.equals("INPUT_VALIDATOR")) {
-                            api = new SecurityControlCreateValidatorApi(shell, this.ps, org, map);
+                            api = new SecurityControlCreateValidatorApi(shell, this.ps, org, control);
                         } else {
-                            map.put("remarks", String.format("セキュリティ制御のタイプが判別できません。%s", type));
-                            this.failureControls.add(new SecurityControl(map));
+                            control.setRemarks(String.format("セキュリティ制御のタイプが判別できません。%s", type));
+                            this.failureControls.add(control);
                             continue;
                         }
                         String msg = (String) api.post();
                         if (Boolean.valueOf(msg)) {
-                            this.successControls.add(new SecurityControl(map));
+                            this.successControls.add(control);
                         } else {
-                            this.failureControls.add(new SecurityControl(map));
+                            this.failureControls.add(control);
                         }
                     } catch (ApiException apie) {
-                        map.put("remarks", apie.getMessage());
-                        this.failureControls.add(new SecurityControl(map));
+                        control.setRemarks(apie.getMessage());
+                        this.failureControls.add(control);
                     }
                 }
                 Thread.sleep(500);

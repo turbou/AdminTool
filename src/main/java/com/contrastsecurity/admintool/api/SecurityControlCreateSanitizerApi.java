@@ -25,7 +25,6 @@ package com.contrastsecurity.admintool.api;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -33,6 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.json.ContrastJson;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -41,11 +41,11 @@ import okhttp3.RequestBody;
 
 public class SecurityControlCreateSanitizerApi extends Api {
 
-    private Map<String, Object> map;
+    private SecurityControl control;
 
-    public SecurityControlCreateSanitizerApi(Shell shell, IPreferenceStore ps, Organization org, Map<String, Object> map) {
+    public SecurityControlCreateSanitizerApi(Shell shell, IPreferenceStore ps, Organization org, SecurityControl control) {
         super(shell, ps, org);
-        this.map = map;
+        this.control = control;
     }
 
     @Override
@@ -54,17 +54,16 @@ public class SecurityControlCreateSanitizerApi extends Api {
         return String.format("%s/api/ng/%s/controls/sanitizers?expand=skip_links", this.contrastUrl, orgId);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected RequestBody getBody() {
         MediaType mediaTypeJson = MediaType.parse("application/json; charset=UTF-8");
-        String name = (String) this.map.get("name");
-        String api = (String) this.map.get("api");
-        String language = (String) this.map.get("language");
-        boolean all_rules = ((Boolean) this.map.get("all_rules"));
+        String name = this.control.getName();
+        String api = this.control.getApi();
+        String language = this.control.getLanguage();
+        boolean all_rules = this.control.isAll_rules();
         String json = null;
         if (!all_rules) {
-            List<String> rules = (List<String>) this.map.get("rules");
+            List<String> rules = this.control.getRules().stream().map(rule -> rule.getName()).collect(Collectors.toList());
             if (rules.isEmpty()) {
                 json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":true, \"rules\":[]}", name, api, language);
             } else {
