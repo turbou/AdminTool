@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
+import com.contrastsecurity.admintool.exception.JsonException;
 import com.contrastsecurity.admintool.json.ContrastJson;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.SecurityControl;
@@ -55,7 +56,7 @@ public class SecurityControlCreateValidatorApi extends Api {
     }
 
     @Override
-    protected RequestBody getBody() {
+    protected RequestBody getBody() throws Exception {
         MediaType mediaTypeJson = MediaType.parse("application/json; charset=UTF-8");
         String name = this.control.getName();
         String api = this.control.getApi();
@@ -63,6 +64,9 @@ public class SecurityControlCreateValidatorApi extends Api {
         boolean all_rules = this.control.isAll_rules();
         String json = null;
         if (!all_rules) {
+            if (this.control.getRules() == null) {
+                throw new JsonException("rulesの指定がありません。");
+            }
             List<String> rules = this.control.getRules().stream().map(rule -> rule.getName()).collect(Collectors.toList());
             if (rules.isEmpty()) {
                 json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":true, \"rules\":[]}", name, api, language);

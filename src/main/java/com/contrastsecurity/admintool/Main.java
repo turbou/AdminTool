@@ -507,30 +507,30 @@ public class Main implements PropertyChangeListener {
                 }
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 try {
-                    String fileName = dir + "\\sanitizer_skeleton.json";
+                    String fileName = dir + "\\securitycontrol_skeleton.json";
                     Writer writer = new FileWriter(fileName);
                     List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
                     Map<String, Object> map = new HashMap<String, Object>();
                     map.put("api", "jp.co.contrast.foo(java.lang.String*)");
                     map.put("language", "Java");
                     map.put("name", "Sanitaizer_foo");
-                    map.put("type", "SANITIZER or INPUT_VALIDATOR");
+                    map.put("type", "SANITIZER");
                     map.put("all_rules", true);
                     mapList.add(map);
                     Map<String, Object> map2 = new HashMap<String, Object>();
                     map2.put("api", "jp.co.contrast.foo(java.lang.String*)");
                     map2.put("language", "Java");
-                    map2.put("name", "Sanitaizer_bar");
-                    map2.put("type", "SANITIZER or INPUT_VALIDATOR");
+                    map2.put("name", "Validator_bar");
+                    map2.put("type", "INPUT_VALIDATOR");
                     map2.put("all_rules", false);
                     String[] array = { "hql-injection", "sql-injection" };
                     map2.put("rules", Arrays.asList(array));
                     mapList.add(map2);
                     gson.toJson(mapList, writer);
                     writer.close();
-                    MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", String.format("スケルトンJSONファイルを出力しました。\r\n%s", fileName));
+                    MessageDialog.openInformation(shell, "セキュリティ制御のスケルトンJSON出力", String.format("スケルトンJSONファイルを出力しました。\r\n%s", fileName));
                 } catch (Exception e) {
-                    MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", e.getMessage());
+                    MessageDialog.openError(shell, "セキュリティ制御のスケルトンJSON出力", e.getMessage());
                 }
             }
         });

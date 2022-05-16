@@ -34,6 +34,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
@@ -43,6 +44,7 @@ import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlCreateSanitizerApi;
 import com.contrastsecurity.admintool.api.SecurityControlCreateValidatorApi;
 import com.contrastsecurity.admintool.exception.ApiException;
+import com.contrastsecurity.admintool.exception.JsonException;
 import com.contrastsecurity.admintool.json.RuleDeserializer;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
@@ -74,19 +76,28 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         monitor.beginTask("セキュリティ制御のインポート...", 100);
         Thread.sleep(300);
-        List<SecurityControl> mapList = null;
+        monitor.subTask("JSONファイルの読み込み...");
+        SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 10);
+        sub1Monitor.beginTask("", 1);
+        List<SecurityControl> controls = null;
         try {
             Reader reader = Files.newBufferedReader(Paths.get(filePath));
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(Rule.class, new RuleDeserializer());
-            mapList = gsonBuilder.create().fromJson(reader, new TypeToken<List<SecurityControl>>() {
+            controls = gsonBuilder.create().fromJson(reader, new TypeToken<List<SecurityControl>>() {
             }.getType());
+            sub1Monitor.worked(1);
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+        sub1Monitor.done();
+        Thread.sleep(1000);
+
+        monitor.subTask("セキュリティ制御の登録...");
+        SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 90);
+        sub2Monitor.beginTask("", controls.size());
         try {
-            monitor.setTaskName(org.getName());
-            for (SecurityControl control : mapList) {
+            for (SecurityControl control : controls) {
                 if (monitor.isCanceled()) {
                     throw new InterruptedException("キャンセルされました。");
                 }
@@ -101,6 +112,7 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                     } else {
                         control.setRemarks(String.format("セキュリティ制御のタイプが判別できません。%s", type));
                         this.failureControls.add(control);
+                        sub2Monitor.worked(1);
                         continue;
                     }
                     String msg = (String) api.post();
@@ -109,18 +121,26 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                     } else {
                         this.failureControls.add(control);
                     }
+                } catch (JsonException je) {
+                    control.setRemarks(je.getMessage());
+                    this.failureControls.add(control);
                 } catch (ApiException apie) {
                     control.setRemarks(apie.getMessage());
                     this.failureControls.add(control);
                 }
+                sub2Monitor.worked(1);
+                Thread.sleep(100);
             }
             Thread.sleep(500);
         } catch (Exception e) {
             throw new InvocationTargetException(e);
         }
+        sub2Monitor.done();
+
         monitor.done();
         SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.successControls, this.failureControls);
         this.shell.getDisplay().syncExec(new Runnable() {
+
             public void run() {
                 int result = dialog.open();
                 if (IDialogConstants.OK_ID != result) {
