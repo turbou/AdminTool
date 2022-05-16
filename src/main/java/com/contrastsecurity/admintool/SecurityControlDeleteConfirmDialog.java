@@ -98,9 +98,9 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
         column6.setWidth(50);
         column6.setText("有効");
 
-        for (SecurityControl control : controls) {
-            addColToControlTable(control, -1);
-        }
+        int[] idx = { 0 };
+        controls.forEach(sc -> addColToControlTable(sc, idx[0]++));
+
         if (selectedIdxes.isEmpty()) {
             titleLbl.setText("削除対象のセキュリティ制御はありません。");
         } else {
@@ -173,7 +173,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
             button.setEnabled(true);
             button.setSelection(true);
             checkBoxList.add(button);
-            selectedIdxes.add(controls.indexOf(control));
+            selectedIdxes.add(index);
         } else {
             button.setEnabled(false);
         }

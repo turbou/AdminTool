@@ -325,8 +325,8 @@ public class Main implements PropertyChangeListener {
                 if (dir == null) {
                     return;
                 }
-                SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganizations(), dir);
-                ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell);
+                SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganization(), dir);
+                ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -376,8 +376,8 @@ public class Main implements PropertyChangeListener {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 String filterWord = scFilterWordTxt.getText().trim();
-                SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganizations(), filterWord);
-                ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell);
+                SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganization(), filterWord);
+                ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -445,8 +445,8 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganizations(), file);
-                ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell);
+                SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganization(), file);
+                ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {

@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +48,12 @@ import com.contrastsecurity.admintool.model.Rule;
 import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import difflib.Chunk;
+import difflib.Delta;
+import difflib.Delta.TYPE;
+import difflib.DiffUtils;
+import difflib.Patch;
 
 public class SecurityControlCompareWithProgress implements IRunnableWithProgress {
 
@@ -96,16 +103,49 @@ public class SecurityControlCompareWithProgress implements IRunnableWithProgress
         }
         monitor.done();
 
-        List<SecurityControl> onlyImpList = new ArrayList<SecurityControl>();
-        List<SecurityControl> onlyExpList = new ArrayList<SecurityControl>();
-        System.out.println("Json");
-        for (SecurityControl control : impList) {
-            System.out.println(control.getName());
+        // Patch<SecurityControl> diff = DiffUtils.diff(expList, impList);
+        // List<Delta<SecurityControl>> deltas = diff.getDeltas();
+        // for (Delta<SecurityControl> delta : deltas) {
+        // TYPE type = delta.getType();
+        // System.out.println(type);
+        // Chunk<SecurityControl> oc = delta.getOriginal();
+        // System.out.printf("del: position=%d, lines=%s%n", oc.getPosition(), oc.getLines());
+        // Chunk<SecurityControl> rc = delta.getRevised();
+        // System.out.printf("add: position=%d, lines=%s%n", rc.getPosition(), rc.getLines());
+        // }
+        // List<SecurityControl> onlyImpList = new ArrayList<SecurityControl>();
+        // List<SecurityControl> onlyExpList = new ArrayList<SecurityControl>();
+        List<String> impNames = impList.stream().map(rule -> rule.toString()).collect(Collectors.toList());
+        List<String> expNames = expList.stream().map(rule -> rule.toString()).collect(Collectors.toList());
+        Patch<String> diff = DiffUtils.diff(impNames, expNames);
+        List<Delta<String>> deltas = diff.getDeltas();
+        for (Delta<String> delta : deltas) {
+            TYPE type = delta.getType();
+            System.out.println(type);
+            Chunk<String> oc = delta.getOriginal();
+            System.out.printf("del: position=%d, lines=%s%n", oc.getPosition(), oc.getLines());
+            Chunk<String> rc = delta.getRevised();
+            System.out.printf("add: position=%d, lines=%s%n", rc.getPosition(), rc.getLines());
         }
-        System.out.println("TeamServer");
-        for (SecurityControl control : expList) {
-            System.out.println(control.getName());
-        }
+        // System.out.println("Json側にだけある");
+        // for (String impName : impNames) {
+        // if (!expNames.contains(impName)) {
+        // System.out.println(impName);
+        // }
+        // }
+        // System.out.println("TeamServer側にだけある");
+        // for (String expName : expNames) {
+        // if (!impNames.contains(expName)) {
+        // System.out.println(expName);
+        // }
+        // }
+        //
+        // for (SecurityControl control : impList) {
+        // System.out.println(control.getName());
+        // }
+        // for (SecurityControl control : expList) {
+        // System.out.println(control.getName());
+        // }
         SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.successControls, this.failureControls);
         this.shell.getDisplay().syncExec(new Runnable() {
             public void run() {

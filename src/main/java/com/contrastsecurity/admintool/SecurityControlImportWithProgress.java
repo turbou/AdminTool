@@ -54,17 +54,17 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
 
     private Shell shell;
     private PreferenceStore ps;
-    private List<Organization> orgs;
+    private Organization org;
     private String filePath;
     private List<SecurityControl> successControls;
     private List<SecurityControl> failureControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SecurityControlImportWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filePath) {
+    public SecurityControlImportWithProgress(Shell shell, PreferenceStore ps, Organization org, String filePath) {
         this.shell = shell;
         this.ps = ps;
-        this.orgs = orgs;
+        this.org = org;
         this.filePath = filePath;
         this.successControls = new ArrayList<SecurityControl>();
         this.failureControls = new ArrayList<SecurityControl>();
@@ -72,7 +72,7 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("セキュリティ制御のインポート...", 100 * this.orgs.size());
+        monitor.beginTask("セキュリティ制御のインポート...", 100);
         Thread.sleep(300);
         List<SecurityControl> mapList = null;
         try {
@@ -84,41 +84,39 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        for (Organization org : this.orgs) {
-            try {
-                monitor.setTaskName(org.getName());
-                for (SecurityControl control : mapList) {
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException("キャンセルされました。");
+        try {
+            monitor.setTaskName(org.getName());
+            for (SecurityControl control : mapList) {
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException("キャンセルされました。");
+                }
+                monitor.subTask(String.format("セキュリティ制御をインポート...%s", control.getName()));
+                String type = control.getType();
+                Api api = null;
+                try {
+                    if (type.equals("SANITIZER")) {
+                        api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, control);
+                    } else if (type.equals("INPUT_VALIDATOR")) {
+                        api = new SecurityControlCreateValidatorApi(shell, this.ps, org, control);
+                    } else {
+                        control.setRemarks(String.format("セキュリティ制御のタイプが判別できません。%s", type));
+                        this.failureControls.add(control);
+                        continue;
                     }
-                    monitor.subTask(String.format("セキュリティ制御をインポート...%s", control.getName()));
-                    String type = control.getType();
-                    Api api = null;
-                    try {
-                        if (type.equals("SANITIZER")) {
-                            api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, control);
-                        } else if (type.equals("INPUT_VALIDATOR")) {
-                            api = new SecurityControlCreateValidatorApi(shell, this.ps, org, control);
-                        } else {
-                            control.setRemarks(String.format("セキュリティ制御のタイプが判別できません。%s", type));
-                            this.failureControls.add(control);
-                            continue;
-                        }
-                        String msg = (String) api.post();
-                        if (Boolean.valueOf(msg)) {
-                            this.successControls.add(control);
-                        } else {
-                            this.failureControls.add(control);
-                        }
-                    } catch (ApiException apie) {
-                        control.setRemarks(apie.getMessage());
+                    String msg = (String) api.post();
+                    if (Boolean.valueOf(msg)) {
+                        this.successControls.add(control);
+                    } else {
                         this.failureControls.add(control);
                     }
+                } catch (ApiException apie) {
+                    control.setRemarks(apie.getMessage());
+                    this.failureControls.add(control);
                 }
-                Thread.sleep(500);
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
             }
+            Thread.sleep(500);
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
         }
         monitor.done();
         SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.successControls, this.failureControls);

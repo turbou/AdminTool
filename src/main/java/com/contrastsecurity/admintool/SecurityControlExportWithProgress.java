@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -49,44 +50,61 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
 
     private Shell shell;
     private PreferenceStore ps;
-    private List<Organization> orgs;
+    private Organization org;
     private String dirPath;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SecurityControlExportWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filePath) {
+    public SecurityControlExportWithProgress(Shell shell, PreferenceStore ps, Organization org, String dirPath) {
         this.shell = shell;
         this.ps = ps;
-        this.orgs = orgs;
-        this.dirPath = filePath;
+        this.org = org;
+        this.dirPath = dirPath;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("セキュリティ制御の読み込み...", 100 * this.orgs.size());
+        monitor.beginTask("セキュリティ制御のエクスポート...", 100);
         Thread.sleep(300);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        for (Organization org : this.orgs) {
-            try {
-                Writer writer = new FileWriter(dirPath + "\\" + org.getName() + ".json");
-                monitor.setTaskName(org.getName());
-                // フィルタの情報を取得
-                monitor.subTask("フィルタの情報を取得...");
-                // アプリケーション一覧を取得
-                monitor.subTask("アプリケーション一覧の情報を取得...");
-                Api securityControlsApi = new SecurityControlsApi(this.shell, this.ps, org);
-                List<SecurityControl> controls = (List<SecurityControl>) securityControlsApi.get();
-                SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
-                sub3Monitor.beginTask("", controls.size());
-                sub3Monitor.done();
-                gson.toJson(controls, writer);
-                writer.close();
-                Thread.sleep(500);
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().registerTypeAdapter(Rule.class, new RuleSerializer()).setPrettyPrinting().create();
+        try {
+            monitor.subTask("セキュリティ制御の情報を取得...");
+            Api api = new SecurityControlsApi(this.shell, this.ps, org);
+            SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 70);
+            sub1Monitor.beginTask("", 1);
+            List<SecurityControl> controls = (List<SecurityControl>) api.get();
+            sub1Monitor.worked(1);
+            sub1Monitor.done();
+            if (controls.isEmpty()) {
+                this.shell.getDisplay().syncExec(new Runnable() {
+                    public void run() {
+                        MessageDialog.openInformation(shell, "セキュリティ制御の出力", "セキュリティ制御が登録されていません。");
+                    }
+                });
+                monitor.setCanceled(true);
             }
+            if (monitor.isCanceled()) {
+                return;
+            }
+            Thread.sleep(1000);
+            Writer writer = new FileWriter(dirPath + "\\" + this.org.getName() + ".json");
+            monitor.subTask("セキュリティ制御の情報を出力...");
+            SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 30);
+            sub2Monitor.beginTask("", 1);
+            gson.toJson(controls, writer);
+            writer.close();
+            sub2Monitor.worked(1);
+            sub2Monitor.done();
+            Thread.sleep(500);
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
         }
         monitor.done();
+        this.shell.getDisplay().syncExec(new Runnable() {
+            public void run() {
+                MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", String.format("JSONファイルを出力しました。\r\n%s", dirPath + "\\" + org.getName() + ".json"));
+            }
+        });
     }
 }

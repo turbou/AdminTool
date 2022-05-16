@@ -39,23 +39,23 @@ import org.eclipse.swt.widgets.Shell;
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.SecurityControlDeleteApi;
 import com.contrastsecurity.admintool.api.SecurityControlsApi;
-import com.contrastsecurity.admintool.model.SecurityControl;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.SecurityControl;
 
 public class SecurityControlDeleteWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
-    private List<Organization> orgs;
+    private Organization org;
     private String filterWord;
     private List<SecurityControl> targetControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SecurityControlDeleteWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filterWord) {
+    public SecurityControlDeleteWithProgress(Shell shell, PreferenceStore ps, Organization org, String filterWord) {
         this.shell = shell;
         this.ps = ps;
-        this.orgs = orgs;
+        this.org = org;
         this.filterWord = filterWord;
         this.targetControls = new ArrayList<SecurityControl>();
     }
@@ -63,79 +63,88 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
     @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("セキュリティ制御の削除...", 100 * this.orgs.size());
+        monitor.beginTask("セキュリティ制御の削除...", 100);
         Thread.sleep(300);
-        for (Organization org : this.orgs) {
-            try {
-                monitor.setTaskName(org.getName());
-                // アプリケーション一覧を取得
-                monitor.subTask("セキュリティ制御の情報を取得...");
-                Api controlsApi = new SecurityControlsApi(this.shell, this.ps, org);
-                List<SecurityControl> controls = (List<SecurityControl>) controlsApi.get();
-                SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
-                sub3Monitor.beginTask("", controls.size());
-                for (SecurityControl control : controls) {
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException("キャンセルされました。");
-                    }
-                    monitor.subTask(String.format("セキュリティ制御を削除...%s", control.getName()));
-                    control.setDeleteFlg(false);
-                    if (!filterWord.isEmpty()) {
-                        if (filterWord.contains("*")) {
-                            String word = filterWord.replace("*", "");
-                            if (filterWord.startsWith("*") && filterWord.endsWith("*")) {
-                                if (control.getName().contains(word)) {
-                                    control.setDeleteFlg(true);
-                                }
-                            } else if (filterWord.endsWith("*")) {
-                                if (control.getName().startsWith(word)) {
-                                    control.setDeleteFlg(true);
-                                }
-                            } else if (filterWord.startsWith("*")) {
-                                if (control.getName().endsWith(word)) {
-                                    control.setDeleteFlg(true);
-                                }
+        try {
+            monitor.subTask("セキュリティ制御の情報を取得...");
+            SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 100);
+            Api controlsApi = new SecurityControlsApi(this.shell, this.ps, org);
+            List<SecurityControl> controls = (List<SecurityControl>) controlsApi.get();
+            sub1Monitor.beginTask("", controls.size());
+            for (SecurityControl control : controls) {
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException("キャンセルされました。");
+                }
+                monitor.subTask(String.format("セキュリティ制御の情報を取得...%s", control.getName()));
+                control.setDeleteFlg(false);
+                if (!filterWord.isEmpty()) {
+                    if (filterWord.contains("*")) {
+                        String word = filterWord.replace("*", "");
+                        if (filterWord.startsWith("*") && filterWord.endsWith("*")) {
+                            if (control.getName().contains(word)) {
+                                control.setDeleteFlg(true);
                             }
-                        } else {
-                            if (control.getName().equals(filterWord)) {
+                        } else if (filterWord.endsWith("*")) {
+                            if (control.getName().startsWith(word)) {
+                                control.setDeleteFlg(true);
+                            }
+                        } else if (filterWord.startsWith("*")) {
+                            if (control.getName().endsWith(word)) {
                                 control.setDeleteFlg(true);
                             }
                         }
                     } else {
-                        control.setDeleteFlg(true);
-                    }
-                    this.targetControls.add(control);
-                    sub3Monitor.worked(1);
-                }
-                SecurityControlDeleteConfirmDialog dialog = new SecurityControlDeleteConfirmDialog(shell, this.targetControls);
-                this.shell.getDisplay().syncExec(new Runnable() {
-                    public void run() {
-                        int result = dialog.open();
-                        if (IDialogConstants.OK_ID != result) {
-                            monitor.setCanceled(true);
+                        if (control.getName().equals(filterWord)) {
+                            control.setDeleteFlg(true);
                         }
                     }
-                });
-                if (monitor.isCanceled()) {
-                    return;
+                } else {
+                    control.setDeleteFlg(true);
                 }
-                List<Integer> selectedIdxes = dialog.getSelectedIdxes();
-                if (selectedIdxes.isEmpty()) {
-                    monitor.setCanceled(true);
-                }
-                if (monitor.isCanceled()) {
-                    return;
-                }
-                for (Integer index : selectedIdxes) {
-                    SecurityControl control = this.targetControls.get(index);
-                    Api controlDeleteApi = new SecurityControlDeleteApi(this.shell, this.ps, org, control.getId());
-                    controlDeleteApi.delete();
-                }
-                sub3Monitor.done();
-                Thread.sleep(500);
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
+                this.targetControls.add(control);
+                sub1Monitor.worked(1);
+                Thread.sleep(10);
             }
+            sub1Monitor.done();
+
+            SecurityControlDeleteConfirmDialog dialog = new SecurityControlDeleteConfirmDialog(shell, this.targetControls);
+            this.shell.getDisplay().syncExec(new Runnable() {
+                public void run() {
+                    int result = dialog.open();
+                    if (IDialogConstants.OK_ID != result) {
+                        monitor.setCanceled(true);
+                    }
+                }
+            });
+            if (monitor.isCanceled()) {
+                return;
+            }
+            List<Integer> selectedIdxes = dialog.getSelectedIdxes();
+            if (selectedIdxes.isEmpty()) {
+                monitor.setCanceled(true);
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
+            monitor.beginTask("セキュリティ制御の削除...", 100);
+            SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 100);
+            sub2Monitor.beginTask("", selectedIdxes.size());
+            int cnt = 1;
+            for (Integer index : selectedIdxes) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                SecurityControl control = this.targetControls.get(index);
+                monitor.subTask(String.format("セキュリティ制御を削除...%s (%d/%d)", control.getName(), cnt++, selectedIdxes.size()));
+                Api controlDeleteApi = new SecurityControlDeleteApi(this.shell, this.ps, org, control.getId());
+                controlDeleteApi.delete();
+                sub2Monitor.worked(1);
+                Thread.sleep(100);
+            }
+            sub2Monitor.done();
+            Thread.sleep(500);
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
         }
         monitor.done();
     }

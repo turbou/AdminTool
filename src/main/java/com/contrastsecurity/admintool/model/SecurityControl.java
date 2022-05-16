@@ -26,6 +26,7 @@ package com.contrastsecurity.admintool.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.gson.annotations.Expose;
 
@@ -166,10 +167,31 @@ public class SecurityControl {
     @Override
     public String toString() {
         List<String> strList = new ArrayList<String>();
-        strList.add("id: " + this.id);
         strList.add("name: " + this.name);
+        strList.add("language: " + this.language);
         strList.add("type: " + this.type);
+        strList.add("api: " + this.api);
+        strList.add("all_rules: " + this.all_rules);
+        if (this.rules != null) {
+            strList.add("rules: " + String.join(", ", this.rules.stream().map(rule -> rule.getName()).collect(Collectors.toList())));
+        }
         return String.join(", ", strList);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof SecurityControl) {
+            SecurityControl other = (SecurityControl) obj;
+            return other.name.equals(this.name) && other.api.equals(this.api) && other.language.equals(this.language);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode()) + ((api == null) ? 0 : api.hashCode()) + ((language == null) ? 0 : language.hashCode());
+        return result;
+    }
 }
