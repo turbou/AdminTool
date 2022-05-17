@@ -124,10 +124,12 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
         allOnBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                int idx = 0;
                 for (SecurityControl control : controls) {
                     if (control.isDeleteFlg()) {
-                        selectedIdxes.add(controls.indexOf(control));
+                        selectedIdxes.add(idx);
                     }
+                    idx++;
                 }
                 for (Button button : checkBoxList) {
                     button.setSelection(true);
