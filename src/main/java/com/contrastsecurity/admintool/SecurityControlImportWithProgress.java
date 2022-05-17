@@ -97,11 +97,12 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 90);
         sub2Monitor.beginTask("", controls.size());
         try {
+            int cnt = 1;
             for (SecurityControl control : controls) {
                 if (monitor.isCanceled()) {
                     throw new InterruptedException("キャンセルされました。");
                 }
-                monitor.subTask(String.format("セキュリティ制御をインポート...%s", control.getName()));
+                monitor.subTask(String.format("セキュリティ制御をインポート...%s (%d/%d)", control.getName(), cnt++, controls.size()));
                 String type = control.getType();
                 Api api = null;
                 try {
