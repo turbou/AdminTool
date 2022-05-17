@@ -135,6 +135,9 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
                     button.setSelection(true);
                 }
                 srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
+                if (!selectedIdxes.isEmpty()) {
+                    getButton(IDialogConstants.OK_ID).setEnabled(true);
+                }
             }
         });
 
@@ -153,6 +156,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
                 }
                 selectedIdxes.clear();
                 srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
+                getButton(IDialogConstants.OK_ID).setEnabled(false);
             }
         });
 
@@ -189,6 +193,11 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
                     }
                 }
                 srcCount.setText(String.format("%d/%d", selectedIdxes.size(), controls.size()));
+                if (selectedIdxes.isEmpty()) {
+                    getButton(IDialogConstants.OK_ID).setEnabled(false);
+                } else {
+                    getButton(IDialogConstants.OK_ID).setEnabled(true);
+                }
             }
         });
         button.pack();
