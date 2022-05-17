@@ -37,9 +37,12 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import org.apache.commons.exec.OS;
 import org.apache.logging.log4j.LogManager;
@@ -55,6 +58,8 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellEvent;
@@ -70,6 +75,8 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.yaml.snakeyaml.Yaml;
@@ -104,8 +111,8 @@ public class Main implements PropertyChangeListener {
     public static final String CSV_MAC_ENCODING = "UTF-8";
     public static final String FILE_ENCODING = "UTF-8";
 
-    public static final int MINIMUM_SIZE_WIDTH = 480;
-    public static final int MINIMUM_SIZE_HEIGHT = 360;
+    public static final int MINIMUM_SIZE_WIDTH = 640;
+    public static final int MINIMUM_SIZE_HEIGHT = 540;
 
     private AdminToolShell shell;
 
@@ -119,6 +126,17 @@ public class Main implements PropertyChangeListener {
     private Button scCmpBtn;
     private Button scSklBtn;
     private Button scRulesShowBtn;
+
+    private Button appLoadBtn;
+    private Text srcListFilter;
+    private Text dstListFilter;
+    private org.eclipse.swt.widgets.List srcList;
+    private org.eclipse.swt.widgets.List dstList;
+    private Label srcCount;
+    private Label dstCount;
+    private Map<String, AppInfo> fullAppMap;
+    private List<String> srcApps = new ArrayList<String>();
+    private List<String> dstApps = new ArrayList<String>();
 
     private Button exExpBtn;
     private Button exDelBtn;
@@ -462,8 +480,8 @@ public class Main implements PropertyChangeListener {
         // sanitizerCompareBtnGrDt.heightHint = 30;
         scCmpBtnGrDt.horizontalSpan = 2;
         scCmpBtn.setLayoutData(scCmpBtnGrDt);
-        scCmpBtn.setText("差分確認");
-        scCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
+        scCmpBtn.setText("インポート済みチェック");
+        scCmpBtn.setToolTipText("セキュリティ制御が正しくインポートされているかを確認します。");
         scCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
         actionBtns.add(scCmpBtn);
         scCmpBtn.addSelectionListener(new SelectionAdapter() {
@@ -476,8 +494,8 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                SecurityControlCompareWithProgress progress = new SecurityControlCompareWithProgress(shell, ps, getValidOrganizations(), file);
-                ProgressMonitorDialog progDialog = new SecurityControlCompareProgressMonitorDialog(shell);
+                SecurityControlCompareWithProgress progress = new SecurityControlCompareWithProgress(shell, ps, getValidOrganization(), file);
+                ProgressMonitorDialog progDialog = new SecurityControlCompareProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -572,6 +590,294 @@ public class Main implements PropertyChangeListener {
         // exButtonGrpGrDt.horizontalSpan = 3;
         // exButtonGrpGrDt.widthHint = 100;
         exBtnGrp.setLayoutData(exBtnGrpGrDt);
+
+        Group appListGrp = new Group(exBtnGrp, SWT.NONE);
+        appListGrp.setLayout(new GridLayout(3, false));
+        GridData appListGrpGrDt = new GridData(GridData.FILL_BOTH);
+        appListGrpGrDt.horizontalSpan = 2;
+        appListGrpGrDt.minimumHeight = 200;
+        appListGrp.setLayoutData(appListGrpGrDt);
+
+        appLoadBtn = new Button(appListGrp, SWT.PUSH);
+        GridData appLoadBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        appLoadBtnGrDt.horizontalSpan = 3;
+        appLoadBtn.setLayoutData(appLoadBtnGrDt);
+        appLoadBtn.setText("アプリケーション一覧の読み込み");
+        appLoadBtn.setToolTipText("TeamServerにオンボードされているアプリケーションを読み込みます。");
+        appLoadBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                uiReset();
+
+                AppsGetWithProgress progress = new AppsGetWithProgress(shell, ps, getValidOrganizations());
+                ProgressMonitorDialog progDialog = new AppGetProgressMonitorDialog(shell);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    StringWriter stringWriter = new StringWriter();
+                    PrintWriter printWriter = new PrintWriter(stringWriter);
+                    e.printStackTrace(printWriter);
+                    String trace = stringWriter.toString();
+                    if (!(e.getTargetException() instanceof TsvException)) {
+                        logger.error(trace);
+                    }
+                    String errorMsg = e.getTargetException().getMessage();
+                    if (e.getTargetException() instanceof ApiException) {
+                        MessageDialog.openWarning(shell, "アプリケーション一覧の取得", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                    } else if (e.getTargetException() instanceof NonApiException) {
+                        MessageDialog.openError(shell, "アプリケーション一覧の取得", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                    } else if (e.getTargetException() instanceof TsvException) {
+                        MessageDialog.openInformation(shell, "アプリケーション一覧の取得", errorMsg);
+                        return;
+                    } else {
+                        MessageDialog.openError(shell, "アプリケーション一覧の取得", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                fullAppMap = progress.getFullAppMap();
+                if (fullAppMap.isEmpty()) {
+                    String userName = ps.getString(PreferenceConstants.USERNAME);
+                    StringJoiner sj = new StringJoiner("\r\n");
+                    sj.add("アプリケーションの取得件数が０件です。考えられる原因としては以下となります。");
+                    sj.add("・下記ユーザーのアプリケーションアクセスグループにView権限が設定されていない。");
+                    sj.add(String.format("　%s", userName));
+                    sj.add("・Assessライセンスが付与されているアプリケーションがない。");
+                    sj.add("・接続設定が正しくない。プロキシの設定がされていない。など");
+                    MessageDialog.openInformation(shell, "アプリケーション一覧の取得", sj.toString());
+                }
+                for (String appLabel : fullAppMap.keySet()) {
+                    srcList.add(appLabel); // UI list
+                    srcApps.add(appLabel); // memory src
+                }
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+            }
+        });
+
+        Composite srcGrp = new Composite(appListGrp, SWT.NONE);
+        srcGrp.setLayout(new GridLayout(1, false));
+        GridData srcGrpGrDt = new GridData(GridData.FILL_BOTH);
+        srcGrp.setLayoutData(srcGrpGrDt);
+
+        srcListFilter = new Text(srcGrp, SWT.BORDER);
+        srcListFilter.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        srcListFilter.setMessage("Filter...");
+        srcListFilter.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent event) {
+                srcList.removeAll(); // UI List src
+                srcApps.clear(); // memory src
+                if (fullAppMap == null) {
+                    srcCount.setText(String.valueOf(srcList.getItemCount()));
+                    return;
+                }
+                String keyword = srcListFilter.getText();
+                if (keyword.isEmpty()) {
+                    for (String appLabel : fullAppMap.keySet()) {
+                        if (dstApps.contains(appLabel)) {
+                            continue; // 既に選択済みのアプリはスキップ
+                        }
+                        srcList.add(appLabel); // UI List src
+                        srcApps.add(appLabel); // memory src
+                    }
+                } else {
+                    for (String appLabel : fullAppMap.keySet()) {
+                        if (appLabel.toLowerCase().contains(keyword.toLowerCase())) {
+                            if (dstApps.contains(appLabel)) {
+                                continue; // 既に選択済みのアプリはスキップ
+                            }
+                            srcList.add(appLabel);
+                            srcApps.add(appLabel);
+                        }
+                    }
+                }
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+            }
+        });
+        this.srcList = new org.eclipse.swt.widgets.List(srcGrp, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        this.srcList.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.srcList.setToolTipText("選択可能なアプリケーション一覧");
+        this.srcList.addListener(SWT.MouseDoubleClick, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                int idx = srcList.getSelectionIndex();
+                if (idx < 0) {
+                    return;
+                }
+                dstList.add(srcApps.get(idx));
+                dstApps.add(srcApps.get(idx));
+                srcList.remove(idx);
+                srcApps.remove(idx);
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        this.srcCount = new Label(srcGrp, SWT.RIGHT);
+        GridData srcCountGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        srcCountGrDt.minimumHeight = 20;
+        srcCountGrDt.heightHint = 20;
+        this.srcCount.setLayoutData(srcCountGrDt);
+        this.srcCount.setFont(new Font(display, "ＭＳ ゴシック", 8, SWT.NORMAL));
+        this.srcCount.setText("0");
+
+        Composite btnGrp = new Composite(appListGrp, SWT.NONE);
+        btnGrp.setLayout(new GridLayout(1, false));
+        GridData btnGrpGrDt = new GridData(GridData.FILL_VERTICAL);
+        btnGrpGrDt.verticalAlignment = SWT.CENTER;
+        btnGrp.setLayoutData(btnGrpGrDt);
+
+        Button allRightBtn = new Button(btnGrp, SWT.PUSH);
+        allRightBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        allRightBtn.setText(">>");
+        allRightBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                for (String appName : srcApps) {
+                    dstList.add(appName);
+                    dstApps.add(appName);
+                }
+                srcList.removeAll();
+                srcApps.clear();
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        Button rightBtn = new Button(btnGrp, SWT.PUSH);
+        rightBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        rightBtn.setText(">");
+        rightBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                for (int idx : srcList.getSelectionIndices()) {
+                    String appName = srcApps.get(idx);
+                    String keyword = dstListFilter.getText();
+                    if (appName.toLowerCase().contains(keyword.toLowerCase())) {
+                        dstList.add(appName);
+                        dstApps.add(appName);
+                    }
+                }
+                List<Integer> sortedList = Arrays.stream(srcList.getSelectionIndices()).boxed().collect(Collectors.toList());
+                Collections.reverse(sortedList);
+                for (Integer idx : sortedList) {
+                    srcList.remove(idx.intValue());
+                    srcApps.remove(idx.intValue());
+                }
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        Button leftBtn = new Button(btnGrp, SWT.PUSH);
+        leftBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        leftBtn.setText("<");
+        leftBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                for (int idx : dstList.getSelectionIndices()) {
+                    String appName = dstApps.get(idx);
+                    String keyword = srcListFilter.getText();
+                    if (appName.toLowerCase().contains(keyword.toLowerCase())) {
+                        srcList.add(appName);
+                        srcApps.add(appName);
+                    }
+                }
+                List<Integer> sortedList = Arrays.stream(dstList.getSelectionIndices()).boxed().collect(Collectors.toList());
+                Collections.reverse(sortedList);
+                for (Integer idx : sortedList) {
+                    dstList.remove(idx.intValue());
+                    dstApps.remove(idx.intValue());
+                }
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        Button allLeftBtn = new Button(btnGrp, SWT.PUSH);
+        allLeftBtn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        allLeftBtn.setText("<<");
+        allLeftBtn.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                for (String appName : dstApps) {
+                    srcList.add(appName);
+                    srcApps.add(appName);
+                }
+                dstList.removeAll();
+                dstApps.clear();
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        Composite dstGrp = new Composite(appListGrp, SWT.NONE);
+        dstGrp.setLayout(new GridLayout(1, false));
+        GridData dstGrpGrDt = new GridData(GridData.FILL_BOTH);
+        dstGrp.setLayoutData(dstGrpGrDt);
+
+        dstListFilter = new Text(dstGrp, SWT.BORDER);
+        dstListFilter.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        dstListFilter.setMessage("Filter...");
+        dstListFilter.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent event) {
+                dstList.removeAll(); // UI List dst
+                dstApps.clear(); // memory dst
+                if (fullAppMap == null) {
+                    dstCount.setText(String.valueOf(dstList.getItemCount()));
+                    return;
+                }
+                String keyword = dstListFilter.getText();
+                if (keyword.isEmpty()) {
+                    for (String appName : fullAppMap.keySet()) {
+                        if (srcApps.contains(appName)) {
+                            continue; // 選択可能にあるアプリはスキップ
+                        }
+                        dstList.add(appName); // UI List dst
+                        dstApps.add(appName); // memory dst
+                    }
+                } else {
+                    for (String appName : fullAppMap.keySet()) {
+                        if (appName.toLowerCase().contains(keyword.toLowerCase())) {
+                            if (srcApps.contains(appName)) {
+                                continue; // 選択可能にあるアプリはスキップ
+                            }
+                            dstList.add(appName); // UI List dst
+                            dstApps.add(appName); // memory dst
+                        }
+                    }
+                }
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        this.dstList = new org.eclipse.swt.widgets.List(dstGrp, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        this.dstList.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.dstList.setToolTipText("選択済みのアプリケーション一覧");
+        this.dstList.addListener(SWT.MouseDoubleClick, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                int idx = dstList.getSelectionIndex();
+                if (idx < 0) {
+                    return;
+                }
+                srcList.add(dstApps.get(idx));
+                srcApps.add(dstApps.get(idx));
+                dstList.remove(idx);
+                dstApps.remove(idx);
+                srcCount.setText(String.valueOf(srcList.getItemCount()));
+                dstCount.setText(String.valueOf(dstList.getItemCount()));
+            }
+        });
+
+        this.dstCount = new Label(dstGrp, SWT.RIGHT);
+        GridData dstCountGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        dstCountGrDt.minimumHeight = 20;
+        dstCountGrDt.heightHint = 20;
+        this.dstCount.setLayoutData(dstCountGrDt);
+        this.dstCount.setFont(new Font(display, "ＭＳ ゴシック", 8, SWT.NORMAL));
+        this.dstCount.setText("0");
 
         // ========== エクスポートボタン ==========
         exExpBtn = new Button(exBtnGrp, SWT.PUSH);

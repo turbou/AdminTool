@@ -26,7 +26,7 @@ package com.contrastsecurity.admintool.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Rule {
+public class Rule implements Comparable<Rule> {
     private String description;
     private String title;
     private String name;
@@ -72,6 +72,11 @@ public class Rule {
         strList.add("name: " + this.name);
         strList.add(String.format("languages: %s", String.join(", ", languages)));
         return String.join("\r\n", strList);
+    }
+
+    @Override
+    public int compareTo(Rule other) {
+        return name.compareTo(other.getName());
     }
 
 }

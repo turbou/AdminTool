@@ -103,7 +103,7 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
         monitor.done();
         this.shell.getDisplay().syncExec(new Runnable() {
             public void run() {
-                MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のスケルトンJSON出力", String.format("JSONファイルを出力しました。\r\n%s", dirPath + "\\" + org.getName() + ".json"));
+                MessageDialog.openInformation(shell, "セキュリティ制御のエクスポート", String.format("JSONファイルを出力しました。\r\n%s", dirPath + "\\" + org.getName() + ".json"));
             }
         });
     }

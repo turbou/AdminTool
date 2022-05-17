@@ -35,7 +35,9 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -49,112 +51,85 @@ import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import difflib.Chunk;
-import difflib.Delta;
-import difflib.Delta.TYPE;
-import difflib.DiffUtils;
-import difflib.Patch;
-
 public class SecurityControlCompareWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
-    private List<Organization> orgs;
+    private Organization org;
     private String filePath;
-    private List<SecurityControl> successControls;
-    private List<SecurityControl> failureControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SecurityControlCompareWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs, String filePath) {
+    public SecurityControlCompareWithProgress(Shell shell, PreferenceStore ps, Organization org, String filePath) {
         this.shell = shell;
         this.ps = ps;
-        this.orgs = orgs;
+        this.org = org;
         this.filePath = filePath;
-        this.successControls = new ArrayList<SecurityControl>();
-        this.failureControls = new ArrayList<SecurityControl>();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("セキュリティ制御の差分確認...", 100 * this.orgs.size());
+        monitor.beginTask("セキュリティ制御のインポート済みチェック...", 100);
         Thread.sleep(300);
-        List<SecurityControl> impList = null;
-        List<SecurityControl> expList = null;
+        monitor.subTask("JSONファイルの読み込み...");
+        SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 30);
+        sub1Monitor.beginTask("", 1);
+        List<SecurityControl> impControls = null;
+        List<SecurityControl> expControls = null;
         try {
             Reader reader = Files.newBufferedReader(Paths.get(filePath));
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(Rule.class, new RuleDeserializer());
-            impList = gsonBuilder.create().fromJson(reader, new TypeToken<List<SecurityControl>>() {
+            impControls = gsonBuilder.create().fromJson(reader, new TypeToken<List<SecurityControl>>() {
             }.getType());
+            sub1Monitor.worked(1);
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        for (Organization org : this.orgs) {
-            try {
-                monitor.setTaskName(org.getName());
-                Api securityControlsApi = new SecurityControlsApi(this.shell, this.ps, org);
-                expList = (List<SecurityControl>) securityControlsApi.get();
-                Thread.sleep(500);
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
-            }
+        sub1Monitor.done();
+        Thread.sleep(1000);
+
+        monitor.subTask("セキュリティ制御の情報を取得...");
+        SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 70);
+        sub2Monitor.beginTask("", 1);
+        try {
+            Api securityControlsApi = new SecurityControlsApi(this.shell, this.ps, org);
+            expControls = (List<SecurityControl>) securityControlsApi.get();
+            sub2Monitor.worked(1);
+            Thread.sleep(500);
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
         }
+        sub2Monitor.done();
+
         monitor.done();
 
-        // Patch<SecurityControl> diff = DiffUtils.diff(expList, impList);
-        // List<Delta<SecurityControl>> deltas = diff.getDeltas();
-        // for (Delta<SecurityControl> delta : deltas) {
-        // TYPE type = delta.getType();
-        // System.out.println(type);
-        // Chunk<SecurityControl> oc = delta.getOriginal();
-        // System.out.printf("del: position=%d, lines=%s%n", oc.getPosition(), oc.getLines());
-        // Chunk<SecurityControl> rc = delta.getRevised();
-        // System.out.printf("add: position=%d, lines=%s%n", rc.getPosition(), rc.getLines());
-        // }
-        // List<SecurityControl> onlyImpList = new ArrayList<SecurityControl>();
-        // List<SecurityControl> onlyExpList = new ArrayList<SecurityControl>();
-        List<String> impNames = impList.stream().map(rule -> rule.toString()).collect(Collectors.toList());
-        List<String> expNames = expList.stream().map(rule -> rule.toString()).collect(Collectors.toList());
-        Patch<String> diff = DiffUtils.diff(impNames, expNames);
-        List<Delta<String>> deltas = diff.getDeltas();
-        for (Delta<String> delta : deltas) {
-            TYPE type = delta.getType();
-            System.out.println(type);
-            Chunk<String> oc = delta.getOriginal();
-            System.out.printf("del: position=%d, lines=%s%n", oc.getPosition(), oc.getLines());
-            Chunk<String> rc = delta.getRevised();
-            System.out.printf("add: position=%d, lines=%s%n", rc.getPosition(), rc.getLines());
-        }
-        // System.out.println("Json側にだけある");
-        // for (String impName : impNames) {
-        // if (!expNames.contains(impName)) {
-        // System.out.println(impName);
-        // }
-        // }
-        // System.out.println("TeamServer側にだけある");
-        // for (String expName : expNames) {
-        // if (!impNames.contains(expName)) {
-        // System.out.println(expName);
-        // }
-        // }
-        //
-        // for (SecurityControl control : impList) {
-        // System.out.println(control.getName());
-        // }
-        // for (SecurityControl control : expList) {
-        // System.out.println(control.getName());
-        // }
-        SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.successControls, this.failureControls);
-        this.shell.getDisplay().syncExec(new Runnable() {
-            public void run() {
-                int result = dialog.open();
-                if (IDialogConstants.OK_ID != result) {
-                    monitor.setCanceled(true);
-                }
+        List<String> impControlStrs = impControls.stream().map(sc -> sc.toString()).collect(Collectors.toList());
+        List<String> expControlStrs = expControls.stream().map(sc -> sc.toString()).collect(Collectors.toList());
+        List<String> problemStrs = new ArrayList<String>();
+        for (String str : impControlStrs) {
+            if (!expControlStrs.contains(str)) {
+                problemStrs.add(str);
             }
-        });
+        }
 
+        if (problemStrs.isEmpty()) {
+            this.shell.getDisplay().syncExec(new Runnable() {
+                public void run() {
+                    MessageDialog.openInformation(shell, "セキュリティ制御のインポート済み確認", String.format("JSONファイル内のセキュリティ制御はすべて%sに登録されています。", org.getName()));
+                }
+            });
+        } else {
+            SecurityControlCompareResultDialog dialog = new SecurityControlCompareResultDialog(shell, problemStrs);
+            this.shell.getDisplay().syncExec(new Runnable() {
+                public void run() {
+                    int result = dialog.open();
+                    if (IDialogConstants.OK_ID != result) {
+                        monitor.setCanceled(true);
+                    }
+                }
+            });
+        }
     }
 }

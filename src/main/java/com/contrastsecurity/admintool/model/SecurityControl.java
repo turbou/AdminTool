@@ -24,8 +24,8 @@
 package com.contrastsecurity.admintool.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.annotations.Expose;
@@ -55,23 +55,6 @@ public class SecurityControl {
     private boolean deleteFlg;
     @Expose(serialize = false)
     private String remarks;
-
-    public SecurityControl() {
-    }
-
-    public SecurityControl(Map<String, Object> map) {
-        String name = (String) map.get("name");
-        String api = (String) map.get("api");
-        String language = (String) map.get("language");
-        boolean all_rules = ((Boolean) map.get("all_rules"));
-        this.name = name;
-        this.api = api;
-        this.language = language;
-        this.all_rules = all_rules;
-        if (map.containsKey("remarks")) {
-            this.remarks = (String) map.get("remarks");
-        }
-    }
 
     public String getApi() {
         return api;
@@ -173,6 +156,7 @@ public class SecurityControl {
         strList.add("api: " + this.api);
         strList.add("all_rules: " + this.all_rules);
         if (this.rules != null) {
+            Collections.sort(this.rules);
             strList.add("rules: " + String.join(", ", this.rules.stream().map(rule -> rule.getName()).collect(Collectors.toList())));
         }
         return String.join(", ", strList);
