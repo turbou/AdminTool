@@ -121,7 +121,7 @@ public class SecurityControlCompareWithProgress implements IRunnableWithProgress
                 }
             });
         } else {
-            SecurityControlCompareResultDialog dialog = new SecurityControlCompareResultDialog(shell, problemStrs);
+            SecurityControlCompareResultDialog dialog = new SecurityControlCompareResultDialog(shell, this.org, problemStrs);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

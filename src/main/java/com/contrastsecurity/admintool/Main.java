@@ -563,7 +563,7 @@ public class Main implements PropertyChangeListener {
                 Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
                 try {
                     List<Rule> rules = (List<Rule>) rulesApi.get();
-                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, rules);
+                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, getValidOrganization(), rules);
                     rulesShowDialog.open();
                 } catch (Exception e2) {
                     MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));
@@ -995,7 +995,7 @@ public class Main implements PropertyChangeListener {
                 Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
                 try {
                     List<Rule> rules = (List<Rule>) rulesApi.get();
-                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, rules);
+                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, getValidOrganization(), rules);
                     rulesShowDialog.open();
                 } catch (Exception e2) {
                     MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));

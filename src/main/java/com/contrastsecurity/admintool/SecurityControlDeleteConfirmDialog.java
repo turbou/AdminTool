@@ -44,18 +44,21 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.SecurityControl;
 
 public class SecurityControlDeleteConfirmDialog extends Dialog {
 
+    private Organization org;
     private List<SecurityControl> controls;
     private Table controlsTable;
     private Label srcCount;
     private List<Button> checkBoxList = new ArrayList<Button>();
     private List<Integer> selectedIdxes = new ArrayList<Integer>();
 
-    public SecurityControlDeleteConfirmDialog(Shell parentShell, List<SecurityControl> controls) {
+    public SecurityControlDeleteConfirmDialog(Shell parentShell, Organization org, List<SecurityControl> controls) {
         super(parentShell);
+        this.org = org;
         this.controls = controls;
     }
 
@@ -237,6 +240,6 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("セキュリティ制御の削除");
+        newShell.setText(String.format("セキュリティ制御の削除 - %s", this.org.getName()));
     }
 }

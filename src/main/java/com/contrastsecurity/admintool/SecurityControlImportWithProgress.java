@@ -139,7 +139,7 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
         sub2Monitor.done();
 
         monitor.done();
-        SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.successControls, this.failureControls);
+        SecurityControlImportResultDialog dialog = new SecurityControlImportResultDialog(shell, this.org, this.successControls, this.failureControls);
         this.shell.getDisplay().syncExec(new Runnable() {
 
             public void run() {

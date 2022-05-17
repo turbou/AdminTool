@@ -42,15 +42,18 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
 
 public class RulesShowDialog extends Dialog {
 
     private Table table;
+    private Organization org;
     private List<Rule> rules;
 
-    public RulesShowDialog(Shell parentShell, List<Rule> rules) {
+    public RulesShowDialog(Shell parentShell, Organization org, List<Rule> rules) {
         super(parentShell);
+        this.org = org;
         this.rules = rules;
     }
 
@@ -140,6 +143,6 @@ public class RulesShowDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("ルール一覧");
+        newShell.setText(String.format("ルール一覧 - %s", this.org.getName()));
     }
 }

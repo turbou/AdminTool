@@ -107,7 +107,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
             }
             sub1Monitor.done();
 
-            SecurityControlDeleteConfirmDialog dialog = new SecurityControlDeleteConfirmDialog(shell, this.targetControls);
+            SecurityControlDeleteConfirmDialog dialog = new SecurityControlDeleteConfirmDialog(shell, this.org, this.targetControls);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

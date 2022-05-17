@@ -39,18 +39,21 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.SecurityControl;
 
 public class SecurityControlImportResultDialog extends Dialog {
 
+    private Organization org;
     private List<SecurityControl> successControls;
     private List<SecurityControl> failureControls;
     private Table failedControlsTable;
     private Label successCntLbl;
     private Label failureCntLbl;
 
-    public SecurityControlImportResultDialog(Shell parentShell, List<SecurityControl> successControls, List<SecurityControl> failureControls) {
+    public SecurityControlImportResultDialog(Shell parentShell, Organization org, List<SecurityControl> successControls, List<SecurityControl> failureControls) {
         super(parentShell);
+        this.org = org;
         this.successControls = successControls;
         this.failureControls = failureControls;
     }
@@ -139,6 +142,6 @@ public class SecurityControlImportResultDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("セキュリティ制御のインポート結果");
+        newShell.setText(String.format("セキュリティ制御のインポート結果 - %s", this.org.getName()));
     }
 }
