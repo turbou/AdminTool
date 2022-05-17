@@ -23,11 +23,13 @@
 
 package com.contrastsecurity.admintool;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -40,7 +42,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
 
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
@@ -50,11 +51,13 @@ public class RulesShowDialog extends Dialog {
     private Table table;
     private Organization org;
     private List<Rule> rules;
+    private List<StyledText> styledTexts;
 
     public RulesShowDialog(Shell parentShell, Organization org, List<Rule> rules) {
         super(parentShell);
         this.org = org;
         this.rules = rules;
+        this.styledTexts = new ArrayList<StyledText>();
     }
 
     @Override
@@ -74,7 +77,7 @@ public class RulesShowDialog extends Dialog {
         column1.setText("日本語名");
         TableColumn column2 = new TableColumn(table, SWT.LEFT);
         column2.setWidth(250);
-        column2.setText("設定値");
+        column2.setText("ルール設定値");
         TableColumn column3 = new TableColumn(table, SWT.LEFT);
         column3.setWidth(350);
         column3.setText("対応言語");
@@ -87,34 +90,58 @@ public class RulesShowDialog extends Dialog {
         item.setText(1, rule.getTitle());
         TableEditor editor2 = new TableEditor(table);
         TableEditor editor3 = new TableEditor(table);
-        Text text = new Text(table, SWT.NONE);
-        text.setEditable(false);
-        text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        text.setText(rule.getName());
-        text.addMouseListener(new MouseAdapter() {
+        StyledText text1 = new StyledText(table, SWT.SINGLE);
+        text1.setEditable(false);
+        text1.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        text1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text1.setText(rule.getName());
+        text1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                text.selectAll();
+                styledTexts.forEach(st -> st.setSelectionRange(0, 0));
+                text1.selectAll();
             }
         });
-        text.pack();
+        text1.pack();
+        styledTexts.add(text1);
         editor2.grabHorizontal = true;
         editor2.horizontalAlignment = SWT.LEFT;
-        editor2.setEditor(text, item, 2);
+        editor2.setEditor(text1, item, 2);
 
-        Text text2 = new Text(table, SWT.NONE);
+        StyledText text2 = new StyledText(table, SWT.SINGLE);
         text2.setEditable(false);
         text2.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
         text2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        text2.setText(String.join(", ", rule.getLanguages()));
+        text2.setText(String.join(",", rule.getLanguages()));
         text2.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                text2.selectAll();
+                Point p = text2.getSelectionRange();
+                Point p2 = text2.getSelection();
+                int max = text2.getText().length();
+                int x = p.x;
+                int y = p2.y;
+                while (x > 0) {
+                    String s = text2.getTextRange(x, 1);
+                    if (s.equals(",")) {
+                        x++;
+                        break;
+                    }
+                    x--;
+                }
+                while (y < max) {
+                    String s = text2.getTextRange(y, 1);
+                    if (s.equals(",")) {
+                        break;
+                    }
+                    y++;
+                }
+                styledTexts.forEach(st -> st.setSelectionRange(0, 0));
+                text2.setSelection(x, y);
             }
         });
         text2.pack();
+        styledTexts.add(text2);
         editor3.grabHorizontal = true;
         editor3.horizontalAlignment = SWT.LEFT;
         editor3.setEditor(text2, item, 3);
