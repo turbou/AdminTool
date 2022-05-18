@@ -40,11 +40,11 @@ import com.google.gson.reflect.TypeToken;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
-public class SecurityControlCreateValidatorApi extends Api {
+public class ControlCreateValidatorApi extends Api {
 
     private SecurityControl control;
 
-    public SecurityControlCreateValidatorApi(Shell shell, IPreferenceStore ps, Organization org, SecurityControl control) {
+    public ControlCreateValidatorApi(Shell shell, IPreferenceStore ps, Organization org, SecurityControl control) {
         super(shell, ps, org);
         this.control = control;
     }

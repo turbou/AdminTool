@@ -28,30 +28,33 @@ import java.lang.reflect.Type;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
-import com.contrastsecurity.admintool.json.SecurityControlsJson;
+import com.contrastsecurity.admintool.json.ContrastJson;
 import com.contrastsecurity.admintool.model.Organization;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class SecurityControlsApi extends Api {
+public class ControlDeleteApi extends Api {
 
-    public SecurityControlsApi(Shell shell, IPreferenceStore ps, Organization org) {
+    private int id;
+
+    public ControlDeleteApi(Shell shell, IPreferenceStore ps, Organization org, int id) {
         super(shell, ps, org);
+        this.id = id;
     }
 
     @Override
     protected String getUrl() {
         String orgId = this.org.getOrganization_uuid();
-        return String.format("%s/api/ng/%s/controls?expand=skip_links&q=&quickFilter=ALL", this.contrastUrl, orgId);
+        return String.format("%s/api/ng/%s/controls/%d/?expand=skip_links", this.contrastUrl, orgId, id);
     }
 
     @Override
     protected Object convert(String response) {
         Gson gson = new Gson();
-        Type controlsType = new TypeToken<SecurityControlsJson>() {
+        Type contrastType = new TypeToken<ContrastJson>() {
         }.getType();
-        SecurityControlsJson controlsJson = gson.fromJson(response, controlsType);
-        return controlsJson.getControls();
+        ContrastJson contrastJson = gson.fromJson(response, contrastType);
+        return contrastJson.getSuccess();
     }
 
 }

@@ -41,8 +41,8 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.SecurityControlCreateSanitizerApi;
-import com.contrastsecurity.admintool.api.SecurityControlCreateValidatorApi;
+import com.contrastsecurity.admintool.api.ControlCreateSanitizerApi;
+import com.contrastsecurity.admintool.api.ControlCreateValidatorApi;
 import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.exception.JsonException;
 import com.contrastsecurity.admintool.json.RuleDeserializer;
@@ -107,9 +107,9 @@ public class SecurityControlImportWithProgress implements IRunnableWithProgress 
                 Api api = null;
                 try {
                     if (type.equals("SANITIZER")) {
-                        api = new SecurityControlCreateSanitizerApi(shell, this.ps, org, control);
+                        api = new ControlCreateSanitizerApi(shell, this.ps, org, control);
                     } else if (type.equals("INPUT_VALIDATOR")) {
-                        api = new SecurityControlCreateValidatorApi(shell, this.ps, org, control);
+                        api = new ControlCreateValidatorApi(shell, this.ps, org, control);
                     } else {
                         control.setRemarks(String.format("セキュリティ制御のタイプが判別できません。%s", type));
                         this.failureControls.add(control);

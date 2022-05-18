@@ -28,7 +28,7 @@ import java.util.StringJoiner;
 
 import com.contrastsecurity.admintool.model.SecurityControl;
 
-public class SecurityControlsJson extends ContrastJson {
+public class ControlsJson extends ContrastJson {
     private List<SecurityControl> controls;
 
     public List<SecurityControl> getControls() {

@@ -43,7 +43,7 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.SecurityControlsApi;
+import com.contrastsecurity.admintool.api.ControlsApi;
 import com.contrastsecurity.admintool.json.RuleDeserializer;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
@@ -94,7 +94,7 @@ public class SecurityControlCompareWithProgress implements IRunnableWithProgress
         SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 70);
         sub2Monitor.beginTask("", 1);
         try {
-            Api securityControlsApi = new SecurityControlsApi(this.shell, this.ps, org);
+            Api securityControlsApi = new ControlsApi(this.shell, this.ps, org);
             expControls = (List<SecurityControl>) securityControlsApi.get();
             sub2Monitor.worked(1);
             Thread.sleep(500);

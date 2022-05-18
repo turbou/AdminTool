@@ -38,7 +38,7 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
-import com.contrastsecurity.admintool.api.SecurityControlsApi;
+import com.contrastsecurity.admintool.api.ControlsApi;
 import com.contrastsecurity.admintool.json.RuleSerializer;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
@@ -70,7 +70,7 @@ public class SecurityControlExportWithProgress implements IRunnableWithProgress 
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().registerTypeAdapter(Rule.class, new RuleSerializer()).setPrettyPrinting().create();
         try {
             monitor.subTask("セキュリティ制御の情報を取得...");
-            Api api = new SecurityControlsApi(this.shell, this.ps, org);
+            Api api = new ControlsApi(this.shell, this.ps, org);
             SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 70);
             sub1Monitor.beginTask("", 1);
             List<SecurityControl> controls = (List<SecurityControl>) api.get();

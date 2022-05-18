@@ -40,11 +40,11 @@ import com.google.gson.reflect.TypeToken;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
-public class SecurityControlCreateSanitizerApi extends Api {
+public class ControlCreateSanitizerApi extends Api {
 
     private SecurityControl control;
 
-    public SecurityControlCreateSanitizerApi(Shell shell, IPreferenceStore ps, Organization org, SecurityControl control) {
+    public ControlCreateSanitizerApi(Shell shell, IPreferenceStore ps, Organization org, SecurityControl control) {
         super(shell, ps, org);
         this.control = control;
     }
