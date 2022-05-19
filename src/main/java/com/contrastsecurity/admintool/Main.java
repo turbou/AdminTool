@@ -495,7 +495,7 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 ControlCompareWithProgress progress = new ControlCompareWithProgress(shell, ps, getValidOrganization(), file);
-                ProgressMonitorDialog progDialog = new ControlCompareProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new SecurityControlCompareProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
