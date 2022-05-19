@@ -51,7 +51,7 @@ import com.contrastsecurity.admintool.model.SecurityControl;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-public class SecurityControlCompareWithProgress implements IRunnableWithProgress {
+public class ControlCompareWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
@@ -60,7 +60,7 @@ public class SecurityControlCompareWithProgress implements IRunnableWithProgress
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SecurityControlCompareWithProgress(Shell shell, PreferenceStore ps, Organization org, String filePath) {
+    public ControlCompareWithProgress(Shell shell, PreferenceStore ps, Organization org, String filePath) {
         this.shell = shell;
         this.ps = ps;
         this.org = org;
@@ -121,7 +121,7 @@ public class SecurityControlCompareWithProgress implements IRunnableWithProgress
                 }
             });
         } else {
-            SecurityControlCompareResultDialog dialog = new SecurityControlCompareResultDialog(shell, this.org, problemStrs);
+            ControlCompareResultDialog dialog = new ControlCompareResultDialog(shell, this.org, problemStrs);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

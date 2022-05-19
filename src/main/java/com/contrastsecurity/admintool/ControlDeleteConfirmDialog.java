@@ -47,7 +47,7 @@ import org.eclipse.swt.widgets.TableItem;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.SecurityControl;
 
-public class SecurityControlDeleteConfirmDialog extends Dialog {
+public class ControlDeleteConfirmDialog extends Dialog {
 
     private Organization org;
     private List<SecurityControl> controls;
@@ -56,7 +56,7 @@ public class SecurityControlDeleteConfirmDialog extends Dialog {
     private List<Button> checkBoxList = new ArrayList<Button>();
     private List<Integer> selectedIdxes = new ArrayList<Integer>();
 
-    public SecurityControlDeleteConfirmDialog(Shell parentShell, Organization org, List<SecurityControl> controls) {
+    public ControlDeleteConfirmDialog(Shell parentShell, Organization org, List<SecurityControl> controls) {
         super(parentShell);
         this.org = org;
         this.controls = controls;

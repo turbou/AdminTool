@@ -42,7 +42,7 @@ import com.contrastsecurity.admintool.api.ControlsApi;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.SecurityControl;
 
-public class SecurityControlDeleteWithProgress implements IRunnableWithProgress {
+public class ControlDeleteWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
@@ -52,7 +52,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public SecurityControlDeleteWithProgress(Shell shell, PreferenceStore ps, Organization org, String filterWord) {
+    public ControlDeleteWithProgress(Shell shell, PreferenceStore ps, Organization org, String filterWord) {
         this.shell = shell;
         this.ps = ps;
         this.org = org;
@@ -107,7 +107,7 @@ public class SecurityControlDeleteWithProgress implements IRunnableWithProgress 
             }
             sub1Monitor.done();
 
-            SecurityControlDeleteConfirmDialog dialog = new SecurityControlDeleteConfirmDialog(shell, this.org, this.targetControls);
+            ControlDeleteConfirmDialog dialog = new ControlDeleteConfirmDialog(shell, this.org, this.targetControls);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

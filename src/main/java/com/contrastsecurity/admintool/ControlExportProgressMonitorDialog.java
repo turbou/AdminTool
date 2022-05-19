@@ -5,11 +5,11 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.model.Organization;
 
-public class SecurityControlCompareProgressMonitorDialog extends ProgressMonitorDialog {
+public class ControlExportProgressMonitorDialog extends ProgressMonitorDialog {
 
     private Organization org;
 
-    public SecurityControlCompareProgressMonitorDialog(Shell parent, Organization org) {
+    public ControlExportProgressMonitorDialog(Shell parent, Organization org) {
         super(parent);
         this.org = org;
     }
@@ -17,7 +17,7 @@ public class SecurityControlCompareProgressMonitorDialog extends ProgressMonitor
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(String.format("セキュリティ制御のインポート済み確認 - %s", this.org.getName()));
+        newShell.setText(String.format("セキュリティ制御のエクスポート - %s", this.org.getName()));
     }
 
 }

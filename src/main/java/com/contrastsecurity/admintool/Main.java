@@ -342,8 +342,8 @@ public class Main implements PropertyChangeListener {
                 if (dir == null) {
                     return;
                 }
-                SecurityControlExportWithProgress progress = new SecurityControlExportWithProgress(shell, ps, getValidOrganization(), dir);
-                ProgressMonitorDialog progDialog = new SecurityControlExportProgressMonitorDialog(shell, getValidOrganization());
+                ControlExportWithProgress progress = new ControlExportWithProgress(shell, ps, getValidOrganization(), dir);
+                ProgressMonitorDialog progDialog = new ControlExportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -393,8 +393,8 @@ public class Main implements PropertyChangeListener {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 String filterWord = scFilterWordTxt.getText().trim();
-                SecurityControlDeleteWithProgress progress = new SecurityControlDeleteWithProgress(shell, ps, getValidOrganization(), filterWord);
-                ProgressMonitorDialog progDialog = new SecurityControlDeleteProgressMonitorDialog(shell, getValidOrganization());
+                ControlDeleteWithProgress progress = new ControlDeleteWithProgress(shell, ps, getValidOrganization(), filterWord);
+                ProgressMonitorDialog progDialog = new ControlDeleteProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -462,8 +462,8 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                SecurityControlImportWithProgress progress = new SecurityControlImportWithProgress(shell, ps, getValidOrganization(), file);
-                ProgressMonitorDialog progDialog = new SecurityControlImportProgressMonitorDialog(shell, getValidOrganization());
+                ControlImportWithProgress progress = new ControlImportWithProgress(shell, ps, getValidOrganization(), file);
+                ProgressMonitorDialog progDialog = new ControlImportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -494,8 +494,8 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                SecurityControlCompareWithProgress progress = new SecurityControlCompareWithProgress(shell, ps, getValidOrganization(), file);
-                ProgressMonitorDialog progDialog = new SecurityControlCompareProgressMonitorDialog(shell, getValidOrganization());
+                ControlCompareWithProgress progress = new ControlCompareWithProgress(shell, ps, getValidOrganization(), file);
+                ProgressMonitorDialog progDialog = new ControlCompareProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {

@@ -40,50 +40,34 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.contrastsecurity.admintool.model.Organization;
-import com.contrastsecurity.admintool.model.SecurityControl;
 
-public class SecurityControlImportResultDialog extends Dialog {
+public class ControlCompareResultDialog extends Dialog {
 
     private Organization org;
-    private List<SecurityControl> successControls;
-    private List<SecurityControl> failureControls;
+    private List<String> problemStrs;
     private Table failedControlsTable;
-    private Label successCntLbl;
-    private Label failureCntLbl;
 
-    public SecurityControlImportResultDialog(Shell parentShell, Organization org, List<SecurityControl> successControls, List<SecurityControl> failureControls) {
+    public ControlCompareResultDialog(Shell parentShell, Organization org, List<String> problemStrs) {
         super(parentShell);
         this.org = org;
-        this.successControls = successControls;
-        this.failureControls = failureControls;
+        this.problemStrs = problemStrs;
     }
 
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        composite.setLayout(new GridLayout(2, false));
-        new Label(composite, SWT.LEFT).setText("成功:");
-
-        this.successCntLbl = new Label(composite, SWT.LEFT);
-        GridData successCntLblGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        this.successCntLbl.setLayoutData(successCntLblGrDt);
-        this.successCntLbl.setText(String.format("%d 件", successControls.size()));
-
-        new Label(composite, SWT.LEFT).setText("失敗:");
-        this.failureCntLbl = new Label(composite, SWT.LEFT);
-        GridData failureCntLblGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        this.failureCntLbl.setLayoutData(failureCntLblGrDt);
-        this.failureCntLbl.setText(String.format("%d 件", failureControls.size()));
+        composite.setLayout(new GridLayout(1, false));
 
         Label tableTitleLbl = new Label(composite, SWT.LEFT);
-        GridData tableTitleLblGrDt = new GridData(GridData.FILL_HORIZONTAL);
-        tableTitleLblGrDt.horizontalSpan = 2;
-        tableTitleLbl.setLayoutData(tableTitleLblGrDt);
-        tableTitleLbl.setText("インポートに失敗したデータは下のリストに表示されます。");
+        tableTitleLbl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        tableTitleLbl.setText("TeamServer上に存在しないセキュリティ制御の一覧です。");
+
+        Label descLbl = new Label(composite, SWT.LEFT);
+        descLbl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        descLbl.setText("※ セキュリティ制御の名前が一致しないだけでなく、設定内容に差異がある場合も一覧に表示されます。");
 
         failedControlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
-        tableGrDt.horizontalSpan = 2;
         failedControlsTable.setLayoutData(tableGrDt);
         failedControlsTable.setLinesVisible(true);
         failedControlsTable.setHeaderVisible(true);
@@ -91,37 +75,22 @@ public class SecurityControlImportResultDialog extends Dialog {
         column0.setWidth(0);
         column0.setResizable(false);
         TableColumn column1 = new TableColumn(failedControlsTable, SWT.LEFT);
-        column1.setWidth(120);
-        column1.setText("名前");
-        TableColumn column2 = new TableColumn(failedControlsTable, SWT.CENTER);
-        column2.setWidth(100);
-        column2.setText("言語");
-        TableColumn column3 = new TableColumn(failedControlsTable, SWT.LEFT);
-        column3.setWidth(250);
-        column3.setText("API");
-        TableColumn column4 = new TableColumn(failedControlsTable, SWT.LEFT);
-        column4.setWidth(300);
-        column4.setText("備考");
+        column1.setWidth(640);
+        column1.setText("存在しないセキュリティ制御");
 
-        failureControls.forEach(sc -> addColToControlTable(sc, -1));
+        problemStrs.forEach(str -> addColToControlTable(str, -1));
 
         return composite;
     }
 
-    private void addColToControlTable(SecurityControl control, int index) {
-        if (control == null) {
-            return;
-        }
+    private void addColToControlTable(String str, int index) {
         TableItem item = null;
         if (index > 0) {
             item = new TableItem(failedControlsTable, SWT.CENTER, index);
         } else {
             item = new TableItem(failedControlsTable, SWT.CENTER);
         }
-        item.setText(1, control.getName());
-        item.setText(2, control.getLanguage());
-        item.setText(3, control.getApi());
-        item.setText(4, control.getRemarks());
+        item.setText(1, str);
     }
 
     @Override
@@ -142,6 +111,6 @@ public class SecurityControlImportResultDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(String.format("セキュリティ制御のインポート結果 - %s", this.org.getName()));
+        newShell.setText(String.format("セキュリティ制御のインポート済み確認結果 - %s", this.org.getName()));
     }
 }
