@@ -609,7 +609,7 @@ public class Main implements PropertyChangeListener {
             public void widgetSelected(SelectionEvent event) {
                 uiReset();
 
-                AppsGetWithProgress progress = new AppsGetWithProgress(shell, ps, getValidOrganizations());
+                AppsGetWithProgress progress = new AppsGetWithProgress(shell, ps, getValidOrganization());
                 ProgressMonitorDialog progDialog = new AppGetProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
@@ -892,6 +892,38 @@ public class Main implements PropertyChangeListener {
         exExpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
+                DirectoryDialog dialog = new DirectoryDialog(shell);
+                dialog.setText("出力先フォルダを指定してください。");
+                String dir = dialog.open();
+                if (dir == null) {
+                    return;
+                }
+                ExclusionExportWithProgress progress = new ExclusionExportWithProgress(shell, ps, getValidOrganization(), dstApps, fullAppMap, dir);
+                ProgressMonitorDialog progDialog = new ExclusionExportProgressMonitorDialog(shell, getValidOrganization());
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    StringWriter stringWriter = new StringWriter();
+                    PrintWriter printWriter = new PrintWriter(stringWriter);
+                    e.printStackTrace(printWriter);
+                    String trace = stringWriter.toString();
+                    if (!(e.getTargetException() instanceof TsvException)) {
+                        logger.error(trace);
+                    }
+                    String errorMsg = e.getTargetException().getMessage();
+                    if (e.getTargetException() instanceof ApiException) {
+                        MessageDialog.openWarning(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                    } else if (e.getTargetException() instanceof NonApiException) {
+                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                    } else if (e.getTargetException() instanceof TsvException) {
+                        MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のエクスポート", errorMsg);
+                        return;
+                    } else {
+                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 

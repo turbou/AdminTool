@@ -52,91 +52,76 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
-    private List<Organization> orgs;
+    private Organization org;
     private Map<String, AppInfo> fullAppMap;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public AppsGetWithProgress(Shell shell, PreferenceStore ps, List<Organization> orgs) {
+    public AppsGetWithProgress(Shell shell, PreferenceStore ps, Organization org) {
         this.shell = shell;
         this.ps = ps;
-        this.orgs = orgs;
+        this.org = org;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         fullAppMap = new TreeMap<String, AppInfo>();
-        boolean prefix_org_flg = false;
-        if (this.orgs.size() > 1) {
-            prefix_org_flg = true;
-        }
-        monitor.beginTask("アプリケーション一覧の読み込み...", 100 * this.orgs.size());
+        monitor.beginTask("アプリケーション一覧の読み込み...", 100);
         Thread.sleep(300);
-        for (Organization org : this.orgs) {
-            try {
-                monitor.setTaskName(org.getName());
+        try {
+            monitor.setTaskName(this.org.getName());
 
-                // アプリケーショングループの情報を取得
-                monitor.subTask("アプリケーショングループの情報を取得...");
-                Map<String, List<String>> appGroupMap = new HashMap<String, List<String>>();
-                Api groupsApi = new GroupsApi(this.shell, this.ps, org);
-                try {
-                    List<CustomGroup> customGroups = (List<CustomGroup>) groupsApi.get();
-                    SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 10);
-                    sub2Monitor.beginTask("", customGroups.size());
-                    for (CustomGroup customGroup : customGroups) {
-                        monitor.subTask(String.format("アプリケーショングループの情報を取得...%s", customGroup.getName()));
-                        List<ApplicationInCustomGroup> apps = customGroup.getApplications();
-                        if (apps != null) {
-                            for (ApplicationInCustomGroup app : apps) {
-                                String appName = app.getApplication().getName();
-                                if (appGroupMap.containsKey(appName)) {
-                                    appGroupMap.get(appName).add(customGroup.getName());
-                                } else {
-                                    appGroupMap.put(appName, new ArrayList<String>(Arrays.asList(customGroup.getName())));
-                                }
+            // アプリケーショングループの情報を取得
+            monitor.subTask("アプリケーショングループの情報を取得...");
+            Map<String, List<String>> appGroupMap = new HashMap<String, List<String>>();
+            Api groupsApi = new GroupsApi(this.shell, this.ps, this.org);
+            try {
+                List<CustomGroup> customGroups = (List<CustomGroup>) groupsApi.get();
+                SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 10);
+                sub2Monitor.beginTask("", customGroups.size());
+                for (CustomGroup customGroup : customGroups) {
+                    monitor.subTask(String.format("アプリケーショングループの情報を取得...%s", customGroup.getName()));
+                    List<ApplicationInCustomGroup> apps = customGroup.getApplications();
+                    if (apps != null) {
+                        for (ApplicationInCustomGroup app : apps) {
+                            String appName = app.getApplication().getName();
+                            if (appGroupMap.containsKey(appName)) {
+                                appGroupMap.get(appName).add(customGroup.getName());
+                            } else {
+                                appGroupMap.put(appName, new ArrayList<String>(Arrays.asList(customGroup.getName())));
                             }
                         }
-                        sub2Monitor.worked(1);
                     }
-                    sub2Monitor.done();
-                } catch (ApiException ae) {
+                    sub2Monitor.worked(1);
                 }
-                // アプリケーション一覧を取得
-                monitor.subTask("アプリケーション一覧の情報を取得...");
-                Api applicationsApi = new ApplicationsApi(this.shell, this.ps, org);
-                List<Application> applications = (List<Application>) applicationsApi.get();
-                SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
-                sub3Monitor.beginTask("", applications.size());
-                for (Application app : applications) {
-                    monitor.subTask(String.format("アプリケーション一覧の情報を取得...%s", app.getName()));
-                    if (app.getLicense().getLevel().equals("Unlicensed")) {
-                        sub3Monitor.worked(1);
-                        continue;
-                    }
-                    if (appGroupMap.containsKey(app.getName())) {
-                        if (prefix_org_flg) {
-                            fullAppMap.put(String.format("[%s] %s - %s", org.getName(), app.getName(), String.join(", ", appGroupMap.get(app.getName()))),
-                                    new AppInfo(org, app.getName(), app.getApp_id()));
-                        } else {
-                            fullAppMap.put(String.format("%s - %s", app.getName(), String.join(", ", appGroupMap.get(app.getName()))),
-                                    new AppInfo(org, app.getName(), app.getApp_id()));
-                        }
-                    } else {
-                        if (prefix_org_flg) {
-                            fullAppMap.put(String.format("[%s] %s", org.getName(), app.getName()), new AppInfo(org, app.getName(), app.getApp_id()));
-                        } else {
-                            fullAppMap.put(String.format("%s", app.getName()), new AppInfo(org, app.getName(), app.getApp_id()));
-                        }
-                    }
-                    sub3Monitor.worked(1);
-                }
-                sub3Monitor.done();
-                Thread.sleep(500);
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
+                sub2Monitor.done();
+            } catch (ApiException ae) {
             }
+            // アプリケーション一覧を取得
+            monitor.subTask("アプリケーション一覧の情報を取得...");
+            Api applicationsApi = new ApplicationsApi(this.shell, this.ps, this.org);
+            List<Application> applications = (List<Application>) applicationsApi.get();
+            SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
+            sub3Monitor.beginTask("", applications.size());
+            for (Application app : applications) {
+                monitor.subTask(String.format("アプリケーション一覧の情報を取得...%s", app.getName()));
+                // if (app.getLicense().getLevel().equals("Unlicensed")) {
+                // sub3Monitor.worked(1);
+                // continue;
+                // }
+                if (appGroupMap.containsKey(app.getName())) {
+                    fullAppMap.put(String.format("%s - %s", app.getName(), String.join(", ", appGroupMap.get(app.getName()))),
+                            new AppInfo(this.org, app.getName(), app.getApp_id()));
+                } else {
+                    fullAppMap.put(String.format("%s", app.getName()), new AppInfo(this.org, app.getName(), app.getApp_id()));
+                }
+                sub3Monitor.worked(1);
+            }
+            sub3Monitor.done();
+            Thread.sleep(500);
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
         }
         monitor.done();
     }
