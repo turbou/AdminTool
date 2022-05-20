@@ -255,6 +255,7 @@ public class Main implements PropertyChangeListener {
                     uiReset();
                 } else {
                     actionBtns.forEach(b -> b.setEnabled(true));
+                    uiUpdateForExclusionButton();
                     settingBtn.setText("設定");
                 }
                 setWindowTitle();
@@ -356,14 +357,14 @@ public class Main implements PropertyChangeListener {
                     }
                     String errorMsg = e.getTargetException().getMessage();
                     if (e.getTargetException() instanceof ApiException) {
-                        MessageDialog.openWarning(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                        MessageDialog.openWarning(shell, "セキュリティ制御のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
                     } else if (e.getTargetException() instanceof NonApiException) {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
                     } else if (e.getTargetException() instanceof TsvException) {
-                        MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のエクスポート", errorMsg);
+                        MessageDialog.openInformation(shell, "セキュリティ制御のエクスポート", errorMsg);
                         return;
                     } else {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                        MessageDialog.openError(shell, "セキュリティ制御のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -604,6 +605,7 @@ public class Main implements PropertyChangeListener {
         appLoadBtn.setLayoutData(appLoadBtnGrDt);
         appLoadBtn.setText("アプリケーション一覧の読み込み");
         appLoadBtn.setToolTipText("TeamServerにオンボードされているアプリケーションを読み込みます。");
+        actionBtns.add(appLoadBtn);
         appLoadBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -692,6 +694,7 @@ public class Main implements PropertyChangeListener {
                     }
                 }
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
         this.srcList = new org.eclipse.swt.widgets.List(srcGrp, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
@@ -710,6 +713,7 @@ public class Main implements PropertyChangeListener {
                 srcApps.remove(idx);
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -741,6 +745,7 @@ public class Main implements PropertyChangeListener {
                 srcApps.clear();
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -766,6 +771,7 @@ public class Main implements PropertyChangeListener {
                 }
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -791,6 +797,7 @@ public class Main implements PropertyChangeListener {
                 }
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -808,6 +815,7 @@ public class Main implements PropertyChangeListener {
                 dstApps.clear();
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -849,6 +857,7 @@ public class Main implements PropertyChangeListener {
                     }
                 }
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -868,6 +877,7 @@ public class Main implements PropertyChangeListener {
                 dstApps.remove(idx);
                 srcCount.setText(String.valueOf(srcList.getItemCount()));
                 dstCount.setText(String.valueOf(dstList.getItemCount()));
+                uiUpdateForExclusionButton();
             }
         });
 
@@ -886,9 +896,9 @@ public class Main implements PropertyChangeListener {
         exExpBtnGrDt.horizontalSpan = 2;
         exExpBtn.setLayoutData(exExpBtnGrDt);
         exExpBtn.setText("エクスポート");
-        exExpBtn.setToolTipText("セキュリティ制御(サニタイザ)のエクスポート");
+        exExpBtn.setToolTipText("例外のエクスポート");
         exExpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
-        actionBtns.add(exExpBtn);
+        // actionBtns.add(exExpBtn);
         exExpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -912,14 +922,14 @@ public class Main implements PropertyChangeListener {
                     }
                     String errorMsg = e.getTargetException().getMessage();
                     if (e.getTargetException() instanceof ApiException) {
-                        MessageDialog.openWarning(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                        MessageDialog.openWarning(shell, "例外のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
                     } else if (e.getTargetException() instanceof NonApiException) {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                        MessageDialog.openError(shell, "例外のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
                     } else if (e.getTargetException() instanceof TsvException) {
-                        MessageDialog.openInformation(shell, "セキュリティ制御(サニタイザ)のエクスポート", errorMsg);
+                        MessageDialog.openInformation(shell, "例外のエクスポート", errorMsg);
                         return;
                     } else {
-                        MessageDialog.openError(shell, "セキュリティ制御(サニタイザ)のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                        MessageDialog.openError(shell, "例外のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -944,7 +954,7 @@ public class Main implements PropertyChangeListener {
         exDelBtn.setText("削除対象を表示");
         exDelBtn.setToolTipText("セキュリティ制御の削除");
         exDelBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
-        actionBtns.add(exDelBtn);
+        // actionBtns.add(exDelBtn);
         exDelBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -980,7 +990,7 @@ public class Main implements PropertyChangeListener {
         exImpBtn.setText("インポート");
         exImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
         exImpBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
-        actionBtns.add(exImpBtn);
+        // actionBtns.add(exImpBtn);
         exImpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -996,7 +1006,7 @@ public class Main implements PropertyChangeListener {
         exCmpBtn.setText("差分確認");
         exCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
         exCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
-        actionBtns.add(exCmpBtn);
+        // actionBtns.add(exCmpBtn);
         exCmpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -1096,6 +1106,25 @@ public class Main implements PropertyChangeListener {
     }
 
     private void uiUpdate() {
+    }
+
+    private void uiUpdateForExclusionButton() {
+        if (dstList.getItemCount() == 0) {
+            exExpBtn.setEnabled(false);
+            exDelBtn.setEnabled(false);
+            exImpBtn.setEnabled(false);
+            exCmpBtn.setEnabled(false);
+        } else if (dstList.getItemCount() == 1) {
+            exExpBtn.setEnabled(true);
+            exDelBtn.setEnabled(true);
+            exImpBtn.setEnabled(true);
+            exCmpBtn.setEnabled(true);
+        } else {
+            exExpBtn.setEnabled(true);
+            exDelBtn.setEnabled(false);
+            exImpBtn.setEnabled(false);
+            exCmpBtn.setEnabled(false);
+        }
     }
 
     public PreferenceStore getPreferenceStore() {

@@ -24,7 +24,10 @@
 package com.contrastsecurity.admintool.api;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -62,21 +65,28 @@ public class ControlCreateValidatorApi extends Api {
         String api = this.control.getApi();
         String language = this.control.getLanguage();
         boolean all_rules = this.control.isAll_rules();
-        String json = null;
-        if (!all_rules) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", name);
+        map.put("api", api);
+        map.put("language", language);
+        if (all_rules) {
+            map.put("all_rules", true);
+            map.put("rules", new ArrayList<String>());
+        } else {
             if (this.control.getRules() == null) {
                 throw new JsonException("rulesの指定がありません。");
             }
             List<String> rules = this.control.getRules().stream().map(rule -> rule.getName()).collect(Collectors.toList());
             if (rules.isEmpty()) {
-                json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":true, \"rules\":[]}", name, api, language);
+                map.put("all_rules", true);
+                map.put("rules", new ArrayList<String>());
             } else {
-                json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":false, \"rules\":[%s]}", name, api, language,
-                        rules.stream().collect(Collectors.joining("\",\"", "\"", "\"")));
+                map.put("all_rules", false);
+                map.put("rules", rules);
             }
-        } else {
-            json = String.format("{\"name\":\"%s\", \"api\":\"%s\", \"language\":\"%s\", \"all_rules\":true, \"rules\":[]}", name, api, language);
         }
+        Gson gson = new Gson();
+        String json = gson.toJson(map);
         return RequestBody.create(json, mediaTypeJson);
     }
 

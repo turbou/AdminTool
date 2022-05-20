@@ -63,7 +63,13 @@ public class Exclusion {
     private boolean all_rules;
 
     @Expose(serialize = true)
-    private List<AssessRule> assess_rules;
+    private boolean all_assessment_rules;
+
+    @Expose(serialize = true)
+    private boolean all_protection_rules;
+
+    @Expose(serialize = true)
+    private List<AssessRule> assessment_rules;
 
     @Expose(serialize = true)
     private List<ProtectRule> protection_rules;
@@ -95,6 +101,102 @@ public class Exclusion {
 
     public void setAll_rules(boolean all_rules) {
         this.all_rules = all_rules;
+    }
+
+    public List<String> getUrls() {
+        return urls;
+    }
+
+    public void setUrls(List<String> urls) {
+        this.urls = urls;
+    }
+
+    public List<String> getCodes() {
+        return codes;
+    }
+
+    public void setCodes(List<String> codes) {
+        this.codes = codes;
+    }
+
+    public boolean isAssess() {
+        return assess;
+    }
+
+    public void setAssess(boolean assess) {
+        this.assess = assess;
+    }
+
+    public boolean isDefend() {
+        return defend;
+    }
+
+    public void setDefend(boolean defend) {
+        this.defend = defend;
+    }
+
+    public int getException_id() {
+        return exception_id;
+    }
+
+    public void setException_id(int exception_id) {
+        this.exception_id = exception_id;
+    }
+
+    public String getInput_type() {
+        return input_type;
+    }
+
+    public void setInput_type(String input_type) {
+        this.input_type = input_type;
+    }
+
+    public String getInput_name() {
+        return input_name;
+    }
+
+    public void setInput_name(String input_name) {
+        this.input_name = input_name;
+    }
+
+    public String getUrl_pattern_type() {
+        return url_pattern_type;
+    }
+
+    public void setUrl_pattern_type(String url_pattern_type) {
+        this.url_pattern_type = url_pattern_type;
+    }
+
+    public List<AssessRule> getAssessment_rules() {
+        return assessment_rules;
+    }
+
+    public void setAssessment_rules(List<AssessRule> assessment_rules) {
+        this.assessment_rules = assessment_rules;
+    }
+
+    public List<ProtectRule> getProtection_rules() {
+        return protection_rules;
+    }
+
+    public void setProtection_rules(List<ProtectRule> protection_rules) {
+        this.protection_rules = protection_rules;
+    }
+
+    public boolean isAll_assessment_rules() {
+        return all_assessment_rules;
+    }
+
+    public void setAll_assessment_rules(boolean all_assessment_rules) {
+        this.all_assessment_rules = all_assessment_rules;
+    }
+
+    public boolean isAll_protection_rules() {
+        return all_protection_rules;
+    }
+
+    public void setAll_protection_rules(boolean all_protection_rules) {
+        this.all_protection_rules = all_protection_rules;
     }
 
     public boolean isDeleteFlg() {
