@@ -26,7 +26,7 @@ package com.contrastsecurity.admintool.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProtectRule implements Comparable<ProtectRule> {
+public class ProtectionRule implements Comparable<ProtectionRule> {
     private String uuid;
     private String name;
     private String displayName;
@@ -139,7 +139,7 @@ public class ProtectRule implements Comparable<ProtectRule> {
     }
 
     @Override
-    public int compareTo(ProtectRule other) {
+    public int compareTo(ProtectionRule other) {
         return uuid.compareTo(other.getUuid());
     }
 

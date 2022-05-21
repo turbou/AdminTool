@@ -994,6 +994,27 @@ public class Main implements PropertyChangeListener {
         exImpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
+                if (dstApps.size() != 1) {
+                    return;
+                }
+                AppInfo appInfo = fullAppMap.get(dstApps.get(0));
+
+                FileDialog dialog = new FileDialog(shell);
+                dialog.setText("インポートするjsonファイルを指定してください。");
+                dialog.setFilterExtensions(new String[] { "*.json" });
+                String file = dialog.open();
+                if (file == null) {
+                    return;
+                }
+                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, getValidOrganization(), appInfo, file);
+                ProgressMonitorDialog progDialog = new ExclusionImportProgressMonitorDialog(shell, getValidOrganization());
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 

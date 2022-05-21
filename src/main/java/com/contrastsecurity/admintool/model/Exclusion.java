@@ -44,7 +44,7 @@ public class Exclusion {
     @Expose(serialize = true)
     private boolean assess;
 
-    @Expose(serialize = true)
+    @Expose(serialize = false)
     private boolean defend;
 
     @Expose(serialize = false)
@@ -69,10 +69,10 @@ public class Exclusion {
     private boolean all_protection_rules;
 
     @Expose(serialize = true)
-    private List<AssessRule> assessment_rules;
+    private List<AssessmentRule> assessment_rules;
 
     @Expose(serialize = true)
-    private List<ProtectRule> protection_rules;
+    private List<ProtectionRule> protection_rules;
 
     @Expose(serialize = false)
     private boolean deleteFlg;
@@ -167,19 +167,19 @@ public class Exclusion {
         this.url_pattern_type = url_pattern_type;
     }
 
-    public List<AssessRule> getAssessment_rules() {
+    public List<AssessmentRule> getAssessment_rules() {
         return assessment_rules;
     }
 
-    public void setAssessment_rules(List<AssessRule> assessment_rules) {
+    public void setAssessment_rules(List<AssessmentRule> assessment_rules) {
         this.assessment_rules = assessment_rules;
     }
 
-    public List<ProtectRule> getProtection_rules() {
+    public List<ProtectionRule> getProtection_rules() {
         return protection_rules;
     }
 
-    public void setProtection_rules(List<ProtectRule> protection_rules) {
+    public void setProtection_rules(List<ProtectionRule> protection_rules) {
         this.protection_rules = protection_rules;
     }
 

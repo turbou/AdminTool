@@ -26,7 +26,7 @@ package com.contrastsecurity.admintool.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AssessRule implements Comparable<AssessRule> {
+public class AssessmentRule implements Comparable<AssessmentRule> {
     private String description;
     private String title;
     private String name;
@@ -65,7 +65,7 @@ public class AssessRule implements Comparable<AssessRule> {
     }
 
     @Override
-    public int compareTo(AssessRule other) {
+    public int compareTo(AssessmentRule other) {
         return name.compareTo(other.getName());
     }
 
