@@ -60,17 +60,15 @@ public class ExclusionExportWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
-    private Organization org;
     private List<String> dstApps;
     private Map<String, AppInfo> fullAppMap;
     private String dirPath;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public ExclusionExportWithProgress(Shell shell, PreferenceStore ps, Organization org, List<String> dstApps, Map<String, AppInfo> fullAppMap, String dirPath) {
+    public ExclusionExportWithProgress(Shell shell, PreferenceStore ps, List<String> dstApps, Map<String, AppInfo> fullAppMap, String dirPath) {
         this.shell = shell;
         this.ps = ps;
-        this.org = org;
         this.dstApps = dstApps;
         this.fullAppMap = fullAppMap;
         this.dirPath = dirPath;
@@ -82,42 +80,38 @@ public class ExclusionExportWithProgress implements IRunnableWithProgress {
         monitor.beginTask("例外のエクスポート...", 100);
         Thread.sleep(300);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().registerTypeAdapter(Rule.class, new RuleSerializer()).setPrettyPrinting().create();
+        Organization org = fullAppMap.values().iterator().next().getOrganization();
         try {
             Map<String, List<String>> appGroupMap = new HashMap<String, List<String>>();
             Set<Organization> orgs = new HashSet<Organization>();
-            for (String appLabel : dstApps) {
-                orgs.add(fullAppMap.get(appLabel).getOrganization());
-            }
             SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 10);
             sub1Monitor.beginTask("", orgs.size());
             // アプリケーショングループの情報を取得
-            for (Organization org : orgs) {
-                monitor.setTaskName(org.getName());
-                monitor.subTask("アプリケーショングループの情報を取得...");
-                Api groupsApi = new GroupsApi(this.shell, this.ps, org);
-                try {
-                    List<CustomGroup> customGroups = (List<CustomGroup>) groupsApi.get();
-                    SubProgressMonitor sub1_1Monitor = new SubProgressMonitor(sub1Monitor, 1);
-                    sub1_1Monitor.beginTask("", customGroups.size());
-                    for (CustomGroup customGroup : customGroups) {
-                        monitor.subTask(String.format("アプリケーショングループの情報を取得...%s", customGroup.getName()));
-                        List<ApplicationInCustomGroup> apps = customGroup.getApplications();
-                        if (apps != null) {
-                            for (ApplicationInCustomGroup app : apps) {
-                                String appName = app.getApplication().getName();
-                                if (appGroupMap.containsKey(appName)) {
-                                    appGroupMap.get(appName).add(customGroup.getName());
-                                } else {
-                                    appGroupMap.put(appName, new ArrayList<String>(Arrays.asList(customGroup.getName())));
-                                }
+            monitor.setTaskName(org.getName());
+            monitor.subTask("アプリケーショングループの情報を取得...");
+            Api groupsApi = new GroupsApi(this.shell, this.ps, org);
+            try {
+                List<CustomGroup> customGroups = (List<CustomGroup>) groupsApi.get();
+                SubProgressMonitor sub1_1Monitor = new SubProgressMonitor(sub1Monitor, 1);
+                sub1_1Monitor.beginTask("", customGroups.size());
+                for (CustomGroup customGroup : customGroups) {
+                    monitor.subTask(String.format("アプリケーショングループの情報を取得...%s", customGroup.getName()));
+                    List<ApplicationInCustomGroup> apps = customGroup.getApplications();
+                    if (apps != null) {
+                        for (ApplicationInCustomGroup app : apps) {
+                            String appName = app.getApplication().getName();
+                            if (appGroupMap.containsKey(appName)) {
+                                appGroupMap.get(appName).add(customGroup.getName());
+                            } else {
+                                appGroupMap.put(appName, new ArrayList<String>(Arrays.asList(customGroup.getName())));
                             }
                         }
-                        sub1_1Monitor.worked(1);
                     }
-                    sub1_1Monitor.done();
-                    Thread.sleep(1000);
-                } catch (ApiException ae) {
+                    sub1_1Monitor.worked(1);
                 }
+                sub1_1Monitor.done();
+                Thread.sleep(1000);
+            } catch (ApiException ae) {
             }
             monitor.subTask("");
             sub1Monitor.done();
@@ -127,7 +121,6 @@ public class ExclusionExportWithProgress implements IRunnableWithProgress {
             sub2Monitor.beginTask("", dstApps.size());
             int appIdx = 1;
             for (String appLabel : dstApps) {
-                Organization org = fullAppMap.get(appLabel).getOrganization();
                 String appName = fullAppMap.get(appLabel).getAppName();
                 String appId = fullAppMap.get(appLabel).getAppId();
                 monitor.setTaskName(String.format("[%s] %s (%d/%d)", org.getName(), appName, appIdx, dstApps.size()));

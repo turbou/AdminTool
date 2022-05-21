@@ -57,7 +57,6 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
-    private Organization org;
     private AppInfo appInfo;;
     private String filePath;
     private List<Exclusion> successControls;
@@ -65,10 +64,9 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public ExclusionImportWithProgress(Shell shell, PreferenceStore ps, Organization org, AppInfo appInfo, String filePath) {
+    public ExclusionImportWithProgress(Shell shell, PreferenceStore ps, AppInfo appInfo, String filePath) {
         this.shell = shell;
         this.ps = ps;
-        this.org = org;
         this.appInfo = appInfo;
         this.filePath = filePath;
         this.successControls = new ArrayList<Exclusion>();
@@ -100,6 +98,7 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
         monitor.subTask("例外の登録...");
         SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 90);
         sub2Monitor.beginTask("", controls.size());
+        Organization org = this.appInfo.getOrganization();
         String appName = this.appInfo.getAppName();
         String appId = this.appInfo.getAppId();
         try {
@@ -136,9 +135,8 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
         sub2Monitor.done();
 
         monitor.done();
-        ExclusionImportResultDialog dialog = new ExclusionImportResultDialog(shell, this.org, this.successControls, this.failureControls);
+        ExclusionImportResultDialog dialog = new ExclusionImportResultDialog(shell, org, this.successControls, this.failureControls);
         this.shell.getDisplay().syncExec(new Runnable() {
-
             public void run() {
                 int result = dialog.open();
                 if (IDialogConstants.OK_ID != result) {

@@ -908,7 +908,7 @@ public class Main implements PropertyChangeListener {
                 if (dir == null) {
                     return;
                 }
-                ExclusionExportWithProgress progress = new ExclusionExportWithProgress(shell, ps, getValidOrganization(), dstApps, fullAppMap, dir);
+                ExclusionExportWithProgress progress = new ExclusionExportWithProgress(shell, ps, dstApps, fullAppMap, dir);
                 ProgressMonitorDialog progDialog = new ExclusionExportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
@@ -952,12 +952,43 @@ public class Main implements PropertyChangeListener {
         GridData exDelBtnGrDt = new GridData(GridData.FILL_BOTH);
         exDelBtn.setLayoutData(exDelBtnGrDt);
         exDelBtn.setText("削除対象を表示");
-        exDelBtn.setToolTipText("セキュリティ制御の削除");
+        exDelBtn.setToolTipText("例外の削除");
         exDelBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         // actionBtns.add(exDelBtn);
         exDelBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
+                if (dstApps.size() != 1) {
+                    return;
+                }
+                AppInfo appInfo = fullAppMap.get(dstApps.get(0));
+                String filterWord = exFilterWordTxt.getText().trim();
+                ExclusionDeleteWithProgress progress = new ExclusionDeleteWithProgress(shell, ps, appInfo, filterWord);
+                ProgressMonitorDialog progDialog = new ExclusionDeleteProgressMonitorDialog(shell, getValidOrganization());
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    StringWriter stringWriter = new StringWriter();
+                    PrintWriter printWriter = new PrintWriter(stringWriter);
+                    e.printStackTrace(printWriter);
+                    String trace = stringWriter.toString();
+                    if (!(e.getTargetException() instanceof TsvException)) {
+                        logger.error(trace);
+                    }
+                    String errorMsg = e.getTargetException().getMessage();
+                    if (e.getTargetException() instanceof ApiException) {
+                        MessageDialog.openWarning(shell, "例外のエクスポート", String.format("TeamServerからエラーが返されました。\r\n%s", errorMsg));
+                    } else if (e.getTargetException() instanceof NonApiException) {
+                        MessageDialog.openError(shell, "例外のエクスポート", String.format("想定外のステータスコード: %s\r\nログファイルをご確認ください。", errorMsg));
+                    } else if (e.getTargetException() instanceof TsvException) {
+                        MessageDialog.openInformation(shell, "例外のエクスポート", errorMsg);
+                        return;
+                    } else {
+                        MessageDialog.openError(shell, "例外のエクスポート", String.format("不明なエラーです。ログファイルをご確認ください。\r\n%s", errorMsg));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -998,7 +1029,6 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 AppInfo appInfo = fullAppMap.get(dstApps.get(0));
-
                 FileDialog dialog = new FileDialog(shell);
                 dialog.setText("インポートするjsonファイルを指定してください。");
                 dialog.setFilterExtensions(new String[] { "*.json" });
@@ -1006,7 +1036,7 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, getValidOrganization(), appInfo, file);
+                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, appInfo, file);
                 ProgressMonitorDialog progDialog = new ExclusionImportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
