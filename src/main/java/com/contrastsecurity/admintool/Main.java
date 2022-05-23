@@ -93,6 +93,7 @@ import com.contrastsecurity.admintool.preference.AboutPage;
 import com.contrastsecurity.admintool.preference.BasePreferencePage;
 import com.contrastsecurity.admintool.preference.ConnectionPreferencePage;
 import com.contrastsecurity.admintool.preference.MyPreferenceDialog;
+import com.contrastsecurity.admintool.preference.OtherPreferencePage;
 import com.contrastsecurity.admintool.preference.PreferenceConstants;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -186,8 +187,8 @@ public class Main implements PropertyChangeListener {
             this.ps.setDefault(PreferenceConstants.CONNECTION_TIMEOUT, 3000);
             this.ps.setDefault(PreferenceConstants.SOCKET_TIMEOUT, 3000);
 
-            this.ps.setDefault(PreferenceConstants.SLEEP_VUL, 300);
-            this.ps.setDefault(PreferenceConstants.SLEEP_LIB, 300);
+            this.ps.setDefault(PreferenceConstants.SLEEP_EX_DEL, 100);
+            this.ps.setDefault(PreferenceConstants.SLEEP_LIB, 100);
 
             this.ps.setDefault(PreferenceConstants.OPENED_MAIN_TAB_IDX, 0);
 
@@ -235,7 +236,8 @@ public class Main implements PropertyChangeListener {
                 ps.setValue(PreferenceConstants.OPENED_MAIN_TAB_IDX, main_idx);
                 ps.setValue(PreferenceConstants.MEM_WIDTH, shell.getSize().x);
                 ps.setValue(PreferenceConstants.MEM_HEIGHT, shell.getSize().y);
-                ps.setValue(PreferenceConstants.SANITIZER_FILTER_WORD, scFilterWordTxt.getText());
+                ps.setValue(PreferenceConstants.CONTROL_DEL_FILTER_WORD, scFilterWordTxt.getText());
+                ps.setValue(PreferenceConstants.EXCLUSION_DEL_FILTER_WORD, exFilterWordTxt.getText());
                 ps.setValue(PreferenceConstants.PROXY_TMP_USER, "");
                 ps.setValue(PreferenceConstants.PROXY_TMP_PASS, "");
                 ps.setValue(PreferenceConstants.TSV_STATUS, "");
@@ -433,7 +435,7 @@ public class Main implements PropertyChangeListener {
         scDelCtrlGrp.setLayoutData(scDelCtrlGrpGrDt);
 
         scFilterWordTxt = new Text(scDelCtrlGrp, SWT.BORDER);
-        scFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
+        scFilterWordTxt.setText(ps.getString(PreferenceConstants.CONTROL_DEL_FILTER_WORD));
         scFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
         scFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
         scFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -1002,7 +1004,7 @@ public class Main implements PropertyChangeListener {
         exDelCtrlGrp.setLayoutData(exDelCtrlGrpGrDt);
 
         exFilterWordTxt = new Text(exDelCtrlGrp, SWT.BORDER);
-        exFilterWordTxt.setText(ps.getString(PreferenceConstants.SANITIZER_FILTER_WORD));
+        exFilterWordTxt.setText(ps.getString(PreferenceConstants.EXCLUSION_DEL_FILTER_WORD));
         exFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
         exFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
         exFilterWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -1112,8 +1114,10 @@ public class Main implements PropertyChangeListener {
                 PreferenceManager mgr = new PreferenceManager();
                 PreferenceNode baseNode = new PreferenceNode("base", new BasePreferencePage());
                 PreferenceNode connectionNode = new PreferenceNode("connection", new ConnectionPreferencePage());
+                PreferenceNode otherNode = new PreferenceNode("other", new OtherPreferencePage());
                 mgr.addToRoot(baseNode);
                 mgr.addToRoot(connectionNode);
+                mgr.addToRoot(otherNode);
                 PreferenceNode aboutNode = new PreferenceNode("about", new AboutPage());
                 mgr.addToRoot(aboutNode);
                 PreferenceDialog dialog = new MyPreferenceDialog(shell, mgr);

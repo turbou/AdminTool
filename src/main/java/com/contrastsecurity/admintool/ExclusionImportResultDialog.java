@@ -28,6 +28,9 @@ import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,6 +41,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 
 import com.contrastsecurity.admintool.model.Exclusion;
 import com.contrastsecurity.admintool.model.Organization;
@@ -91,7 +95,7 @@ public class ExclusionImportResultDialog extends Dialog {
         column0.setWidth(0);
         column0.setResizable(false);
         TableColumn column1 = new TableColumn(failedControlsTable, SWT.LEFT);
-        column1.setWidth(120);
+        column1.setWidth(400);
         column1.setText("名前");
         TableColumn column2 = new TableColumn(failedControlsTable, SWT.CENTER);
         column2.setWidth(100);
@@ -118,10 +122,27 @@ public class ExclusionImportResultDialog extends Dialog {
         } else {
             item = new TableItem(failedControlsTable, SWT.CENTER);
         }
-        item.setText(1, exclusion.getName());
+        TableEditor editor = new TableEditor(failedControlsTable);
+
+        Text text1 = new Text(failedControlsTable, SWT.SINGLE);
+        text1.setEditable(false);
+        text1.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        text1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text1.setText(exclusion.getName());
+        text1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                text1.selectAll();
+            }
+        });
+        text1.pack();
+        editor.grabHorizontal = true;
+        editor.horizontalAlignment = SWT.LEFT;
+        editor.setEditor(text1, item, 1);
+        // item.setText(1, exclusion.getName());
         // item.setText(2, control.getLanguage());
         // item.setText(3, control.getApi());
-        // item.setText(4, control.getRemarks());
+        item.setText(4, exclusion.getRemarks());
     }
 
     @Override

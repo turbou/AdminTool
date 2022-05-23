@@ -42,18 +42,11 @@ public class PreferenceConstants {
     public static final String CONNECTION_TIMEOUT = new String("com.contrastsecurity.csvdltool.connection_timeout");
     public static final String SOCKET_TIMEOUT = new String("com.contrastsecurity.csvdltool.socket_timeout");
 
-    public static final String SANITIZER_FILTER_WORD = new String("com.contrastsecurity.admindltool.sanitizer_filter_word");
+    public static final String CONTROL_DEL_FILTER_WORD = new String("com.contrastsecurity.admindltool.control_del_filter_word");
+    public static final String EXCLUSION_DEL_FILTER_WORD = new String("com.contrastsecurity.admindltool.exclusion_del_filter_word");
 
-    public static final String SLEEP_VUL = new String("com.contrastsecurity.csvdltool.sleep_vul");
+    public static final String SLEEP_EX_DEL = new String("com.contrastsecurity.admintool.sleep_ex_del");
     public static final String SLEEP_LIB = new String("com.contrastsecurity.csvdltool.sleep_lib");
-
-    public static final String ATTACK_RANGE_DAYTIME = new String("com.contrastsecurity.csvdltool.attack_range_daytime");
-    public static final String ATTACK_RANGE_NIGHTTIME = new String("com.contrastsecurity.csvdltool.attack_range_nighttime");
-    public static final String ATTACK_START_WEEKDAY = new String("com.contrastsecurity.csvdltool.attack_start_weekday");
-    public static final String ATTACK_DETECTED_DATE_FILTER = new String("com.contrastsecurity.csvdltool.attack_detected_date_filter");
-    public static final String CSV_OUT_HEADER_ATTACKEVENT = new String("com.contrastsecurity.csvdltool.csv_out_header_attackevent");
-    public static final String CSV_COLUMN_ATTACKEVENT = new String("com.contrastsecurity.csvdltool.csv_out_column_attackevent");
-    public static final String CSV_FILE_FORMAT_ATTACKEVENT = new String("com.contrastsecurity.csvdltool.csv_file_format_attackevent");
 
     public static final String OPENED_MAIN_TAB_IDX = new String("com.contrastsecurity.csvdltool.opened_main_tab_idx");
     public static final String MEM_WIDTH = new String("com.contrastsecurity.csvdltool.mem_width");

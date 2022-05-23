@@ -41,6 +41,7 @@ import com.contrastsecurity.admintool.api.ExclusionDeleteApi;
 import com.contrastsecurity.admintool.api.ExclusionsApi;
 import com.contrastsecurity.admintool.model.Exclusion;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.preference.PreferenceConstants;
 
 public class ExclusionDeleteWithProgress implements IRunnableWithProgress {
 
@@ -65,6 +66,7 @@ public class ExclusionDeleteWithProgress implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         monitor.beginTask("例外の削除...", 100);
         Thread.sleep(300);
+        int sleep = this.ps.getInt(PreferenceConstants.SLEEP_EX_DEL);
         try {
             monitor.subTask("例外の情報を取得...");
             SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 100);
@@ -142,7 +144,7 @@ public class ExclusionDeleteWithProgress implements IRunnableWithProgress {
                 Api exclusionDeleteApi = new ExclusionDeleteApi(this.shell, this.ps, org, this.appInfo.getAppId(), control.getException_id());
                 exclusionDeleteApi.delete();
                 sub2Monitor.worked(1);
-                Thread.sleep(100);
+                Thread.sleep(sleep);
             }
             sub2Monitor.done();
             Thread.sleep(500);

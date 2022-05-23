@@ -50,6 +50,7 @@ import com.contrastsecurity.admintool.model.AssessmentRule;
 import com.contrastsecurity.admintool.model.Exclusion;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.ProtectionRule;
+import com.contrastsecurity.admintool.preference.PreferenceConstants;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
@@ -101,13 +102,14 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
         Organization org = this.appInfo.getOrganization();
         String appName = this.appInfo.getAppName();
         String appId = this.appInfo.getAppId();
+        int sleep = this.ps.getInt(PreferenceConstants.SLEEP_LIB);
         try {
             int cnt = 1;
             for (Exclusion control : controls) {
                 if (monitor.isCanceled()) {
                     throw new InterruptedException("キャンセルされました。");
                 }
-                monitor.subTask(String.format("セキュリティ制御をインポート...%s (%d/%d)", control.getName(), cnt++, controls.size()));
+                monitor.subTask(String.format("例外をインポート...%s (%d/%d)", control.getName(), cnt++, controls.size()));
                 String type = control.getType();
                 Api api = null;
                 try {
@@ -126,7 +128,7 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
                     this.failureControls.add(control);
                 }
                 sub2Monitor.worked(1);
-                Thread.sleep(100);
+                Thread.sleep(sleep);
             }
             Thread.sleep(500);
         } catch (Exception e) {
