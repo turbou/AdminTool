@@ -106,7 +106,8 @@ public class ExclusionCreateApi extends Api {
                 if (this.exclusion.getUrls() == null || this.exclusion.getUrls().isEmpty()) {
                     throw new JsonException("urlsの指定がありません。");
                 }
-                map.put("urls", this.exclusion.getUrls());
+                map.put("urls",
+                        this.exclusion.getUrls().stream().map(s -> s.replaceAll(this.exclusion.getReplaceBef(), this.exclusion.getReplaceAft())).collect(Collectors.toList()));
             }
         } else if (type.equals("URL")) {
             map.put("codes", new ArrayList<String>());
@@ -118,7 +119,8 @@ public class ExclusionCreateApi extends Api {
                 if (this.exclusion.getUrls() == null || this.exclusion.getUrls().isEmpty()) {
                     throw new JsonException("urlsの指定がありません。");
                 }
-                map.put("urls", this.exclusion.getUrls());
+                map.put("urls",
+                        this.exclusion.getUrls().stream().map(s -> s.replaceAll(this.exclusion.getReplaceBef(), this.exclusion.getReplaceAft())).collect(Collectors.toList()));
             }
         } else {
             throw new JsonException("typeの指定が不正です。");

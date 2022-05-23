@@ -75,6 +75,10 @@ public class Exclusion {
     private List<ProtectionRule> protection_rules;
 
     @Expose(serialize = false)
+    private String replaceBef;
+    @Expose(serialize = false)
+    private String replaceAft;
+    @Expose(serialize = false)
     private boolean deleteFlg;
     @Expose(serialize = false)
     private String remarks;
@@ -197,6 +201,22 @@ public class Exclusion {
 
     public void setAll_protection_rules(boolean all_protection_rules) {
         this.all_protection_rules = all_protection_rules;
+    }
+
+    public String getReplaceBef() {
+        return replaceBef;
+    }
+
+    public void setReplaceBef(String replaceBef) {
+        this.replaceBef = replaceBef;
+    }
+
+    public String getReplaceAft() {
+        return replaceAft;
+    }
+
+    public void setReplaceAft(String replaceAft) {
+        this.replaceAft = replaceAft;
     }
 
     public boolean isDeleteFlg() {

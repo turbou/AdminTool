@@ -113,7 +113,7 @@ public class Main implements PropertyChangeListener {
     public static final String FILE_ENCODING = "UTF-8";
 
     public static final int MINIMUM_SIZE_WIDTH = 640;
-    public static final int MINIMUM_SIZE_HEIGHT = 540;
+    public static final int MINIMUM_SIZE_HEIGHT = 640;
 
     private AdminToolShell shell;
 
@@ -142,6 +142,8 @@ public class Main implements PropertyChangeListener {
     private Button exExpBtn;
     private Button exDelBtn;
     private Text exFilterWordTxt;
+    private Text exImpRepBefWordTxt;
+    private Text exImpRepAftWordTxt;
     private Button exImpBtn;
     private Button exCmpBtn;
     private Button exSklBtn;
@@ -238,6 +240,8 @@ public class Main implements PropertyChangeListener {
                 ps.setValue(PreferenceConstants.MEM_HEIGHT, shell.getSize().y);
                 ps.setValue(PreferenceConstants.CONTROL_DEL_FILTER_WORD, scFilterWordTxt.getText());
                 ps.setValue(PreferenceConstants.EXCLUSION_DEL_FILTER_WORD, exFilterWordTxt.getText());
+                ps.setValue(PreferenceConstants.EXCLUSION_IMP_REP_BEF_WORD, exImpRepBefWordTxt.getText());
+                ps.setValue(PreferenceConstants.EXCLUSION_IMP_REP_AFT_WORD, exImpRepAftWordTxt.getText());
                 ps.setValue(PreferenceConstants.PROXY_TMP_USER, "");
                 ps.setValue(PreferenceConstants.PROXY_TMP_PASS, "");
                 ps.setValue(PreferenceConstants.TSV_STATUS, "");
@@ -587,7 +591,7 @@ public class Main implements PropertyChangeListener {
         Composite exBtnGrp = new Composite(exShell, SWT.NULL);
         GridLayout exBtnGrpLt = new GridLayout(2, false);
         exBtnGrpLt.marginWidth = 10;
-        exBtnGrpLt.marginHeight = 10;
+        exBtnGrpLt.marginHeight = 0;
         exBtnGrp.setLayout(exBtnGrpLt);
         GridData exBtnGrpGrDt = new GridData(GridData.FILL_BOTH);
         // exButtonGrpGrDt.horizontalSpan = 3;
@@ -940,9 +944,9 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== 削除ボタン ==========
-        Composite exDelGrp = new Composite(exBtnGrp, SWT.NULL);
+        Group exDelGrp = new Group(exBtnGrp, SWT.NULL);
         GridLayout exDelGrpLt = new GridLayout(2, false);
-        exDelGrpLt.marginWidth = 0;
+        exDelGrpLt.marginWidth = 2;
         exDelGrpLt.marginHeight = 0;
         exDelGrp.setLayout(exDelGrpLt);
         GridData exDelGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
@@ -994,16 +998,7 @@ public class Main implements PropertyChangeListener {
             }
         });
 
-        Composite exDelCtrlGrp = new Composite(exDelGrp, SWT.NULL);
-        GridLayout exDelCtrlGrpLt = new GridLayout(1, false);
-        exDelCtrlGrpLt.marginWidth = 0;
-        exDelCtrlGrpLt.marginHeight = 1;
-        exDelCtrlGrp.setLayout(exDelCtrlGrpLt);
-        GridData exDelCtrlGrpGrDt = new GridData(GridData.FILL_BOTH);
-        // deleteExceptionCtrlGrpGrDt.heightHint = 70;
-        exDelCtrlGrp.setLayoutData(exDelCtrlGrpGrDt);
-
-        exFilterWordTxt = new Text(exDelCtrlGrp, SWT.BORDER);
+        exFilterWordTxt = new Text(exDelGrp, SWT.BORDER);
         exFilterWordTxt.setText(ps.getString(PreferenceConstants.EXCLUSION_DEL_FILTER_WORD));
         exFilterWordTxt.setMessage("例) hoge, foo_*, *bar*, *_baz");
         exFilterWordTxt.setToolTipText("削除対象を指定します。アスタリスク使用で前方、後方、部分一致を指定できます。カンマ区切りで複数指定可能です。");
@@ -1015,10 +1010,43 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== インポートボタン ==========
-        exImpBtn = new Button(exBtnGrp, SWT.PUSH);
+        Group exImpGrp = new Group(exBtnGrp, SWT.NULL);
+        GridLayout exImpGrpLt = new GridLayout(3, false);
+        exImpGrpLt.marginWidth = 2;
+        exImpGrpLt.marginHeight = 0;
+        exImpGrp.setLayout(exImpGrpLt);
+        GridData exImpGrpGrDt = new GridData(GridData.FILL_BOTH);
+        exImpGrpGrDt.horizontalSpan = 2;
+        exImpGrp.setLayoutData(exImpGrpGrDt);
+
+        exImpRepBefWordTxt = new Text(exImpGrp, SWT.BORDER);
+        exImpRepBefWordTxt.setText(ps.getString(PreferenceConstants.EXCLUSION_IMP_REP_BEF_WORD));
+        exImpRepBefWordTxt.setMessage("例) /CONTEXT_PATH");
+        exImpRepBefWordTxt.setToolTipText("urlsの値を置換する際の置換前のパスを指定してください。");
+        exImpRepBefWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        exImpRepBefWordTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                exImpRepBefWordTxt.selectAll();
+            }
+        });
+
+        new Label(exImpGrp, SWT.NONE).setText("→");
+
+        exImpRepAftWordTxt = new Text(exImpGrp, SWT.BORDER);
+        exImpRepAftWordTxt.setText(ps.getString(PreferenceConstants.EXCLUSION_IMP_REP_AFT_WORD));
+        exImpRepAftWordTxt.setMessage("例) /imart");
+        exImpRepAftWordTxt.setToolTipText("urlsの値を置換する際の置換後のパスを指定してください。");
+        exImpRepAftWordTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        exImpRepAftWordTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                exImpRepAftWordTxt.selectAll();
+            }
+        });
+
+        exImpBtn = new Button(exImpGrp, SWT.PUSH);
         GridData exImpBtnGrDt = new GridData(GridData.FILL_BOTH);
         exImpBtnGrDt.heightHint = 50;
-        exImpBtnGrDt.horizontalSpan = 2;
+        exImpBtnGrDt.horizontalSpan = 3;
         exImpBtn.setLayoutData(exImpBtnGrDt);
         exImpBtn.setText("インポート");
         exImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
@@ -1038,7 +1066,7 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, appInfo, file);
+                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, appInfo, exImpRepBefWordTxt.getText(), exImpRepAftWordTxt.getText(), file);
                 ProgressMonitorDialog progDialog = new ExclusionImportProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);

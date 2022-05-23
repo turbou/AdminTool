@@ -44,6 +44,8 @@ public class PreferenceConstants {
 
     public static final String CONTROL_DEL_FILTER_WORD = new String("com.contrastsecurity.admindltool.control_del_filter_word");
     public static final String EXCLUSION_DEL_FILTER_WORD = new String("com.contrastsecurity.admindltool.exclusion_del_filter_word");
+    public static final String EXCLUSION_IMP_REP_BEF_WORD = new String("com.contrastsecurity.admindltool.exclusion_imp_rep_bef_word");
+    public static final String EXCLUSION_IMP_REP_AFT_WORD = new String("com.contrastsecurity.admindltool.exclusion_imp_rep_aft_word");
 
     public static final String SLEEP_EX_DEL = new String("com.contrastsecurity.admintool.sleep_ex_del");
     public static final String SLEEP_LIB = new String("com.contrastsecurity.csvdltool.sleep_lib");

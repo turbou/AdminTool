@@ -59,16 +59,20 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
     private Shell shell;
     private PreferenceStore ps;
     private AppInfo appInfo;;
+    private String replaceBef;
+    private String replaceAft;
     private String filePath;
     private List<Exclusion> successControls;
     private List<Exclusion> failureControls;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public ExclusionImportWithProgress(Shell shell, PreferenceStore ps, AppInfo appInfo, String filePath) {
+    public ExclusionImportWithProgress(Shell shell, PreferenceStore ps, AppInfo appInfo, String replaceBef, String replaceAft, String filePath) {
         this.shell = shell;
         this.ps = ps;
         this.appInfo = appInfo;
+        this.replaceBef = replaceBef;
+        this.replaceAft = replaceAft;
         this.filePath = filePath;
         this.successControls = new ArrayList<Exclusion>();
         this.failureControls = new ArrayList<Exclusion>();
@@ -81,13 +85,13 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
         monitor.subTask("JSONファイルの読み込み...");
         SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 10);
         sub1Monitor.beginTask("", 1);
-        List<Exclusion> controls = null;
+        List<Exclusion> exclusions = null;
         try {
             Reader reader = Files.newBufferedReader(Paths.get(filePath));
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(AssessmentRule.class, new AssessmentRuleDeserializer());
             gsonBuilder.registerTypeAdapter(ProtectionRule.class, new ProtectionRuleDeserializer());
-            controls = gsonBuilder.create().fromJson(reader, new TypeToken<List<Exclusion>>() {
+            exclusions = gsonBuilder.create().fromJson(reader, new TypeToken<List<Exclusion>>() {
             }.getType());
             sub1Monitor.worked(1);
         } catch (IOException ioe) {
@@ -98,34 +102,36 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
 
         monitor.subTask("例外の登録...");
         SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 90);
-        sub2Monitor.beginTask("", controls.size());
+        sub2Monitor.beginTask("", exclusions.size());
         Organization org = this.appInfo.getOrganization();
         String appName = this.appInfo.getAppName();
         String appId = this.appInfo.getAppId();
         int sleep = this.ps.getInt(PreferenceConstants.SLEEP_LIB);
         try {
             int cnt = 1;
-            for (Exclusion control : controls) {
+            for (Exclusion exclusion : exclusions) {
                 if (monitor.isCanceled()) {
                     throw new InterruptedException("キャンセルされました。");
                 }
-                monitor.subTask(String.format("例外をインポート...%s (%d/%d)", control.getName(), cnt++, controls.size()));
-                String type = control.getType();
+                monitor.subTask(String.format("例外をインポート...%s (%d/%d)", exclusion.getName(), cnt++, exclusions.size()));
+                String type = exclusion.getType();
+                exclusion.setReplaceBef(this.replaceBef);
+                exclusion.setReplaceAft(this.replaceAft);
                 Api api = null;
                 try {
-                    api = new ExclusionCreateApi(shell, this.ps, org, appId, control);
+                    api = new ExclusionCreateApi(shell, this.ps, org, appId, exclusion);
                     String msg = (String) api.post();
                     if (Boolean.valueOf(msg)) {
-                        this.successControls.add(control);
+                        this.successControls.add(exclusion);
                     } else {
-                        this.failureControls.add(control);
+                        this.failureControls.add(exclusion);
                     }
                 } catch (JsonException je) {
-                    control.setRemarks(je.getMessage());
-                    this.failureControls.add(control);
+                    exclusion.setRemarks(je.getMessage());
+                    this.failureControls.add(exclusion);
                 } catch (ApiException apie) {
-                    control.setRemarks(apie.getMessage());
-                    this.failureControls.add(control);
+                    exclusion.setRemarks(apie.getMessage());
+                    this.failureControls.add(exclusion);
                 }
                 sub2Monitor.worked(1);
                 Thread.sleep(sleep);
