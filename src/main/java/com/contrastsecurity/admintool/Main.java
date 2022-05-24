@@ -82,12 +82,16 @@ import org.eclipse.swt.widgets.Text;
 import org.yaml.snakeyaml.Yaml;
 
 import com.contrastsecurity.admintool.api.Api;
+import com.contrastsecurity.admintool.api.AssessRulesConfigurationsApi;
+import com.contrastsecurity.admintool.api.ProtectionPoliciesApi;
 import com.contrastsecurity.admintool.api.RulesApi;
 import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.exception.NonApiException;
 import com.contrastsecurity.admintool.exception.TsvException;
+import com.contrastsecurity.admintool.model.AssessRulesConfiguration;
 import com.contrastsecurity.admintool.model.ContrastSecurityYaml;
 import com.contrastsecurity.admintool.model.Organization;
+import com.contrastsecurity.admintool.model.ProtectionPolicy;
 import com.contrastsecurity.admintool.model.Rule;
 import com.contrastsecurity.admintool.preference.AboutPage;
 import com.contrastsecurity.admintool.preference.BasePreferencePage;
@@ -350,7 +354,7 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 ControlExportWithProgress progress = new ControlExportWithProgress(shell, ps, getValidOrganization(), dir);
-                ProgressMonitorDialog progDialog = new ControlExportProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ControlExportProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -401,7 +405,7 @@ public class Main implements PropertyChangeListener {
             public void widgetSelected(SelectionEvent event) {
                 String filterWord = scFilterWordTxt.getText().trim();
                 ControlDeleteWithProgress progress = new ControlDeleteWithProgress(shell, ps, getValidOrganization(), filterWord);
-                ProgressMonitorDialog progDialog = new ControlDeleteProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ControlDeleteProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -470,7 +474,7 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 ControlImportWithProgress progress = new ControlImportWithProgress(shell, ps, getValidOrganization(), file);
-                ProgressMonitorDialog progDialog = new ControlImportProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ControlImportProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -570,7 +574,7 @@ public class Main implements PropertyChangeListener {
                 Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
                 try {
                     List<Rule> rules = (List<Rule>) rulesApi.get();
-                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, getValidOrganization(), rules);
+                    SecurityControlRulesShowDialog rulesShowDialog = new SecurityControlRulesShowDialog(shell, getValidOrganization(), rules);
                     rulesShowDialog.open();
                 } catch (Exception e2) {
                     MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));
@@ -915,7 +919,7 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 ExclusionExportWithProgress progress = new ExclusionExportWithProgress(shell, ps, dstApps, fullAppMap, dir);
-                ProgressMonitorDialog progDialog = new ExclusionExportProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ExclusionExportProgressMonitorDialog(shell);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -970,7 +974,7 @@ public class Main implements PropertyChangeListener {
                 AppInfo appInfo = fullAppMap.get(dstApps.get(0));
                 String filterWord = exFilterWordTxt.getText().trim();
                 ExclusionDeleteWithProgress progress = new ExclusionDeleteWithProgress(shell, ps, appInfo, filterWord);
-                ProgressMonitorDialog progDialog = new ExclusionDeleteProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ExclusionDeleteProgressMonitorDialog(shell, appInfo);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -1067,7 +1071,7 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, appInfo, exImpRepBefWordTxt.getText(), exImpRepAftWordTxt.getText(), file);
-                ProgressMonitorDialog progDialog = new ExclusionImportProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ExclusionImportProgressMonitorDialog(shell, appInfo);
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -1115,10 +1119,25 @@ public class Main implements PropertyChangeListener {
             @SuppressWarnings("unchecked")
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
+                if (dstApps.size() != 1) {
+                    return;
+                }
+                AppInfo appInfo = fullAppMap.get(dstApps.get(0));
+                Api configsApi = new AssessRulesConfigurationsApi(shell, ps, getValidOrganization(), appInfo.getAppId());
+                Api policiesApi = new ProtectionPoliciesApi(shell, ps, getValidOrganization(), appInfo.getAppId());
                 try {
-                    List<Rule> rules = (List<Rule>) rulesApi.get();
-                    RulesShowDialog rulesShowDialog = new RulesShowDialog(shell, getValidOrganization(), rules);
+                    List<AssessRulesConfiguration> configs = (List<AssessRulesConfiguration>) configsApi.get();
+                    List<ProtectionPolicy> policies = null;
+                    try {
+                        policies = (List<ProtectionPolicy>) policiesApi.get();
+                    } catch (ApiException ae) {
+                        if (ae.getResponse_code() == 403) {
+                            policies = new ArrayList<ProtectionPolicy>();
+                        } else {
+                            throw ae;
+                        }
+                    }
+                    ExclusionRulesShowDialog rulesShowDialog = new ExclusionRulesShowDialog(shell, getValidOrganization(), appInfo, configs, policies);
                     rulesShowDialog.open();
                 } catch (Exception e2) {
                     MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));

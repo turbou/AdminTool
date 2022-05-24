@@ -45,20 +45,19 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.contrastsecurity.admintool.model.Exclusion;
-import com.contrastsecurity.admintool.model.Organization;
 
 public class ExclusionDeleteConfirmDialog extends Dialog {
 
-    private Organization org;
+    private AppInfo appInfo;
     private List<Exclusion> exclusions;
-    private Table controlsTable;
+    private Table table;
     private Label srcCount;
     private List<Button> checkBoxList = new ArrayList<Button>();
     private List<Integer> selectedIdxes = new ArrayList<Integer>();
 
-    public ExclusionDeleteConfirmDialog(Shell parentShell, Organization org, List<Exclusion> controls) {
+    public ExclusionDeleteConfirmDialog(Shell parentShell, AppInfo appInfo, List<Exclusion> controls) {
         super(parentShell);
-        this.org = org;
+        this.appInfo = appInfo;
         this.exclusions = controls;
     }
 
@@ -73,41 +72,38 @@ public class ExclusionDeleteConfirmDialog extends Dialog {
         srcCountGrDt.horizontalAlignment = SWT.RIGHT;
         this.srcCount.setLayoutData(srcCountGrDt);
 
-        controlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
+        table = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
         tableGrDt.horizontalSpan = 2;
-        controlsTable.setLayoutData(tableGrDt);
-        controlsTable.setLinesVisible(true);
-        controlsTable.setHeaderVisible(true);
-        TableColumn column0 = new TableColumn(controlsTable, SWT.NONE);
+        table.setLayoutData(tableGrDt);
+        table.setLinesVisible(true);
+        table.setHeaderVisible(true);
+        TableColumn column0 = new TableColumn(table, SWT.NONE);
         column0.setWidth(0);
         column0.setResizable(false);
-        TableColumn column1 = new TableColumn(controlsTable, SWT.CENTER);
+        TableColumn column1 = new TableColumn(table, SWT.CENTER);
         column1.setWidth(50);
         column1.setText("削除");
-        TableColumn column2 = new TableColumn(controlsTable, SWT.LEFT);
+        TableColumn column2 = new TableColumn(table, SWT.LEFT);
         column2.setWidth(50);
         column2.setText("ID");
-        TableColumn column3 = new TableColumn(controlsTable, SWT.LEFT);
-        column3.setWidth(120);
+        TableColumn column3 = new TableColumn(table, SWT.LEFT);
+        column3.setWidth(400);
         column3.setText("名前");
-        TableColumn column4 = new TableColumn(controlsTable, SWT.CENTER);
+        TableColumn column4 = new TableColumn(table, SWT.CENTER);
         column4.setWidth(100);
-        column4.setText("言語");
-        TableColumn column5 = new TableColumn(controlsTable, SWT.LEFT);
+        column4.setText("種類");
+        TableColumn column5 = new TableColumn(table, SWT.LEFT);
         column5.setWidth(250);
-        column5.setText("API");
-        TableColumn column6 = new TableColumn(controlsTable, SWT.LEFT);
-        column6.setWidth(50);
-        column6.setText("有効");
+        column5.setText("備考");
 
         int[] idx = { 0 };
-        exclusions.forEach(sc -> addColToControlTable(sc, idx[0]++));
+        exclusions.forEach(sc -> addColToTable(sc, idx[0]++));
 
         if (selectedIdxes.isEmpty()) {
-            titleLbl.setText("削除対象のセキュリティ制御はありません。");
+            titleLbl.setText("削除対象の例外はありません。");
         } else {
-            titleLbl.setText("チェックされているセキュリティ制御が削除対象となります。");
+            titleLbl.setText("チェックされている例外が削除対象となります。");
             this.srcCount.setText(String.format("%d/%d", selectedIdxes.size(), exclusions.size()));
         }
 
@@ -166,19 +162,19 @@ public class ExclusionDeleteConfirmDialog extends Dialog {
         return composite;
     }
 
-    private void addColToControlTable(Exclusion control, int index) {
-        if (control == null) {
+    private void addColToTable(Exclusion exclusion, int index) {
+        if (exclusion == null) {
             return;
         }
         TableItem item = null;
         if (index > 0) {
-            item = new TableItem(controlsTable, SWT.CENTER, index);
+            item = new TableItem(table, SWT.CENTER, index);
         } else {
-            item = new TableItem(controlsTable, SWT.CENTER);
+            item = new TableItem(table, SWT.CENTER);
         }
-        TableEditor editor = new TableEditor(controlsTable);
-        Button button = new Button(controlsTable, SWT.CHECK);
-        if (control.isDeleteFlg()) {
+        TableEditor editor = new TableEditor(table);
+        Button button = new Button(table, SWT.CHECK);
+        if (exclusion.isDeleteFlg()) {
             button.setEnabled(true);
             button.setSelection(true);
             checkBoxList.add(button);
@@ -207,8 +203,16 @@ public class ExclusionDeleteConfirmDialog extends Dialog {
         editor.minimumWidth = button.getSize().x;
         editor.horizontalAlignment = SWT.CENTER;
         editor.setEditor(button, item, 1);
-        item.setText(2, String.valueOf(control.getException_id()));
-        item.setText(3, control.getName());
+        item.setText(2, String.valueOf(exclusion.getException_id()));
+        item.setText(3, exclusion.getName());
+        item.setText(4, exclusion.getType());
+        if (exclusion.getType().equals("INPUT")) {
+            if (exclusion.getInput_name().isEmpty()) {
+                item.setText(5, exclusion.getInput_type());
+            } else {
+                item.setText(5, String.format("%s - %s", exclusion.getInput_type(), exclusion.getInput_name()));
+            }
+        }
     }
 
     public List<Integer> getSelectedIdxes() {
@@ -226,7 +230,7 @@ public class ExclusionDeleteConfirmDialog extends Dialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(640, 480);
+        return new Point(720, 480);
     }
 
     @Override
@@ -237,6 +241,6 @@ public class ExclusionDeleteConfirmDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(String.format("セキュリティ制御の削除 - %s", this.org.getName()));
+        newShell.setText(String.format("例外の削除 - %s", this.appInfo.getAppName()));
     }
 }

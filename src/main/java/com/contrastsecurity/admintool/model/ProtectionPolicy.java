@@ -1,5 +1,8 @@
 package com.contrastsecurity.admintool.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ProtectionPolicy {
     private String name;
     private String type;
@@ -29,4 +32,12 @@ public class ProtectionPolicy {
         this.uuid = uuid;
     }
 
+    @Override
+    public String toString() {
+        List<String> strList = new ArrayList<String>();
+        strList.add("name: " + this.name);
+        strList.add("type: " + this.type);
+        strList.add("uuid: " + this.uuid);
+        return String.join("\r\n", strList);
+    }
 }

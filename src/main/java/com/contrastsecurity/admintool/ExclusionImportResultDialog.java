@@ -44,20 +44,19 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.contrastsecurity.admintool.model.Exclusion;
-import com.contrastsecurity.admintool.model.Organization;
 
 public class ExclusionImportResultDialog extends Dialog {
 
-    private Organization org;
+    private AppInfo appInfo;
     private List<Exclusion> successExclusions;
     private List<Exclusion> failureExclusions;
     private Table failedControlsTable;
     private Label successCntLbl;
     private Label failureCntLbl;
 
-    public ExclusionImportResultDialog(Shell parentShell, Organization org, List<Exclusion> successExclusions, List<Exclusion> failureExclusions) {
+    public ExclusionImportResultDialog(Shell parentShell, AppInfo appInfo, List<Exclusion> successExclusions, List<Exclusion> failureExclusions) {
         super(parentShell);
-        this.org = org;
+        this.appInfo = appInfo;
         this.successExclusions = successExclusions;
         this.failureExclusions = failureExclusions;
     }
@@ -163,6 +162,6 @@ public class ExclusionImportResultDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(String.format("例外のインポート結果 - %s", this.org.getName()));
+        newShell.setText(String.format("例外のインポート結果 - %s", this.appInfo.getAppName()));
     }
 }

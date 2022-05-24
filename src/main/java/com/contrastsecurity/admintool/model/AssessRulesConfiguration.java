@@ -1,5 +1,8 @@
 package com.contrastsecurity.admintool.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AssessRulesConfiguration {
     private String rule_name;
     private String rule_title;
@@ -29,4 +32,12 @@ public class AssessRulesConfiguration {
         this.rule_description = rule_description;
     }
 
+    @Override
+    public String toString() {
+        List<String> strList = new ArrayList<String>();
+        strList.add("name: " + this.rule_name);
+        strList.add("title: " + this.rule_title);
+        strList.add("description: " + this.rule_description);
+        return String.join("\r\n", strList);
+    }
 }

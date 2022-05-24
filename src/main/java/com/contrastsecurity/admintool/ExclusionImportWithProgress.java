@@ -143,7 +143,7 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
         sub2Monitor.done();
 
         monitor.done();
-        ExclusionImportResultDialog dialog = new ExclusionImportResultDialog(shell, org, this.successControls, this.failureControls);
+        ExclusionImportResultDialog dialog = new ExclusionImportResultDialog(shell, appInfo, this.successControls, this.failureControls);
         this.shell.getDisplay().syncExec(new Runnable() {
             public void run() {
                 int result = dialog.open();

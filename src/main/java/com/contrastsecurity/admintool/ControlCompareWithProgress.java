@@ -121,7 +121,7 @@ public class ControlCompareWithProgress implements IRunnableWithProgress {
                 }
             });
         } else {
-            ControlCompareResultDialog dialog = new ControlCompareResultDialog(shell, this.org, problemStrs);
+            ControlCompareResultDialog dialog = new ControlCompareResultDialog(shell, problemStrs);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

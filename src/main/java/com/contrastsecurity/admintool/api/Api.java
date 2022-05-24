@@ -307,11 +307,11 @@ public abstract class Api {
                 if (response.code() == 200) {
                     return response.body().string();
                 } else if (response.code() == 400) {
-                    throw new ApiException(response.body().string());
+                    throw new ApiException(response.body().string(), response.code());
                 } else if (response.code() == 401) {
-                    throw new ApiException(response.body().string());
+                    throw new ApiException(response.body().string(), response.code());
                 } else if (response.code() == 403) {
-                    throw new ApiException(response.body().string());
+                    throw new ApiException(response.body().string(), response.code());
                 } else {
                     logger.warn(response.code());
                     logger.warn(response.body().string());

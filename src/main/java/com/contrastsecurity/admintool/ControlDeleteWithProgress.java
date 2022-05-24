@@ -107,7 +107,7 @@ public class ControlDeleteWithProgress implements IRunnableWithProgress {
             }
             sub1Monitor.done();
 
-            ControlDeleteConfirmDialog dialog = new ControlDeleteConfirmDialog(shell, this.org, this.targetControls);
+            ControlDeleteConfirmDialog dialog = new ControlDeleteConfirmDialog(shell, this.targetControls);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

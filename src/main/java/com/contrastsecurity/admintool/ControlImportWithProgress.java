@@ -139,7 +139,7 @@ public class ControlImportWithProgress implements IRunnableWithProgress {
         sub2Monitor.done();
 
         monitor.done();
-        ControlImportResultDialog dialog = new ControlImportResultDialog(shell, this.org, this.successControls, this.failureControls);
+        ControlImportResultDialog dialog = new ControlImportResultDialog(shell, this.successControls, this.failureControls);
         this.shell.getDisplay().syncExec(new Runnable() {
 
             public void run() {

@@ -27,8 +27,19 @@ public class ApiException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    private int response_code;
+
+    public ApiException(String message, int response_code) {
+        super(message);
+        this.response_code = response_code;
+    }
+
     public ApiException(String message) {
         super(message);
+    }
+
+    public int getResponse_code() {
+        return response_code;
     }
 
 }

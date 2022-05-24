@@ -112,7 +112,7 @@ public class ExclusionDeleteWithProgress implements IRunnableWithProgress {
             }
             sub1Monitor.done();
 
-            ExclusionDeleteConfirmDialog dialog = new ExclusionDeleteConfirmDialog(shell, org, this.targetExclusions);
+            ExclusionDeleteConfirmDialog dialog = new ExclusionDeleteConfirmDialog(shell, appInfo, this.targetExclusions);
             this.shell.getDisplay().syncExec(new Runnable() {
                 public void run() {
                     int result = dialog.open();

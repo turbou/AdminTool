@@ -39,17 +39,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import com.contrastsecurity.admintool.model.Organization;
-
 public class ControlCompareResultDialog extends Dialog {
 
-    private Organization org;
     private List<String> problemStrs;
     private Table failedControlsTable;
 
-    public ControlCompareResultDialog(Shell parentShell, Organization org, List<String> problemStrs) {
+    public ControlCompareResultDialog(Shell parentShell, List<String> problemStrs) {
         super(parentShell);
-        this.org = org;
         this.problemStrs = problemStrs;
     }
 
@@ -111,6 +107,6 @@ public class ControlCompareResultDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(String.format("セキュリティ制御のインポート済み確認結果 - %s", this.org.getName()));
+        newShell.setText("セキュリティ制御のインポート済み確認結果");
     }
 }
