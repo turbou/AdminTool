@@ -1110,7 +1110,7 @@ public class Main implements PropertyChangeListener {
         exRulesShowBtn = new Button(exBtnGrp, SWT.PUSH);
         exRulesShowBtn.setText("ルール一覧");
         exRulesShowBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
-        actionBtns.add(exRulesShowBtn);
+        // actionBtns.add(exRulesShowBtn);
         exRulesShowBtn.addSelectionListener(new SelectionAdapter() {
             @SuppressWarnings("unchecked")
             @Override
@@ -1197,16 +1197,19 @@ public class Main implements PropertyChangeListener {
             exDelBtn.setEnabled(false);
             exImpBtn.setEnabled(false);
             exCmpBtn.setEnabled(false);
+            exRulesShowBtn.setEnabled(false);
         } else if (dstList.getItemCount() == 1) {
             exExpBtn.setEnabled(true);
             exDelBtn.setEnabled(true);
             exImpBtn.setEnabled(true);
             exCmpBtn.setEnabled(true);
+            exRulesShowBtn.setEnabled(true);
         } else {
             exExpBtn.setEnabled(true);
             exDelBtn.setEnabled(false);
             exImpBtn.setEnabled(false);
             exCmpBtn.setEnabled(false);
+            exRulesShowBtn.setEnabled(false);
         }
     }
 
