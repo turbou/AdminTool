@@ -26,13 +26,8 @@ package com.contrastsecurity.admintool;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,11 +40,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.api.Api;
 import com.contrastsecurity.admintool.api.ExclusionsApi;
-import com.contrastsecurity.admintool.api.GroupsApi;
-import com.contrastsecurity.admintool.exception.ApiException;
 import com.contrastsecurity.admintool.json.RuleSerializer;
-import com.contrastsecurity.admintool.model.ApplicationInCustomGroup;
-import com.contrastsecurity.admintool.model.CustomGroup;
 import com.contrastsecurity.admintool.model.Exclusion;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
@@ -77,50 +68,15 @@ public class ExclusionExportWithProgress implements IRunnableWithProgress {
     @SuppressWarnings("unchecked")
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        monitor.beginTask("例外のエクスポート...", 100);
+        monitor.beginTask("例外のエクスポート...", 100 * dstApps.size());
         Thread.sleep(300);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().registerTypeAdapter(Rule.class, new RuleSerializer()).setPrettyPrinting().create();
         Organization org = fullAppMap.values().iterator().next().getOrganization();
         try {
-            Map<String, List<String>> appGroupMap = new HashMap<String, List<String>>();
-            Set<Organization> orgs = new HashSet<Organization>();
-            SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 10);
-            sub1Monitor.beginTask("", orgs.size());
-            // アプリケーショングループの情報を取得
-            monitor.setTaskName(org.getName());
-            monitor.subTask("アプリケーショングループの情報を取得...");
-            Api groupsApi = new GroupsApi(this.shell, this.ps, org);
-            try {
-                List<CustomGroup> customGroups = (List<CustomGroup>) groupsApi.get();
-                SubProgressMonitor sub1_1Monitor = new SubProgressMonitor(sub1Monitor, 1);
-                sub1_1Monitor.beginTask("", customGroups.size());
-                for (CustomGroup customGroup : customGroups) {
-                    monitor.subTask(String.format("アプリケーショングループの情報を取得...%s", customGroup.getName()));
-                    List<ApplicationInCustomGroup> apps = customGroup.getApplications();
-                    if (apps != null) {
-                        for (ApplicationInCustomGroup app : apps) {
-                            String appName = app.getApplication().getName();
-                            if (appGroupMap.containsKey(appName)) {
-                                appGroupMap.get(appName).add(customGroup.getName());
-                            } else {
-                                appGroupMap.put(appName, new ArrayList<String>(Arrays.asList(customGroup.getName())));
-                            }
-                        }
-                    }
-                    sub1_1Monitor.worked(1);
-                }
-                sub1_1Monitor.done();
-                Thread.sleep(1000);
-            } catch (ApiException ae) {
-            }
-            monitor.subTask("");
-            sub1Monitor.done();
-
-            // 選択済みアプリの脆弱性情報を取得
-            SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 70);
-            sub2Monitor.beginTask("", dstApps.size());
             int appIdx = 1;
             for (String appLabel : dstApps) {
+                SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 70);
+                sub1Monitor.beginTask("", 1);
                 String appName = fullAppMap.get(appLabel).getAppName();
                 String appId = fullAppMap.get(appLabel).getAppId();
                 monitor.setTaskName(String.format("[%s] %s (%d/%d)", org.getName(), appName, appIdx, dstApps.size()));
@@ -129,23 +85,25 @@ public class ExclusionExportWithProgress implements IRunnableWithProgress {
                 List<Exclusion> exclusions = (List<Exclusion>) api.get();
                 sub1Monitor.worked(1);
                 sub1Monitor.done();
+
+                monitor.subTask("例外の情報を出力...");
+                SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 30);
+                sub2Monitor.beginTask("", 1);
                 if (exclusions.isEmpty()) {
+                    sub2Monitor.worked(1);
+                    sub2Monitor.done();
                     continue;
                 }
                 Thread.sleep(1000);
                 Writer writer = new FileWriter(dirPath + "\\" + org.getName() + "_" + appName + ".json");
-                monitor.subTask("例外の情報を出力...");
-                SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 30);
-                sub3Monitor.beginTask("", 1);
                 gson.toJson(exclusions, writer);
                 writer.close();
-                sub3Monitor.worked(1);
-                sub3Monitor.done();
+                sub2Monitor.worked(1);
+                sub2Monitor.done();
                 Thread.sleep(500);
                 appIdx++;
             }
             monitor.subTask("");
-            sub2Monitor.done();
         } catch (Exception e) {
             throw new InvocationTargetException(e);
         }
