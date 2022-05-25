@@ -1061,7 +1061,7 @@ public class Main implements PropertyChangeListener {
         exImpBtnGrDt.horizontalSpan = 3;
         exImpBtn.setLayoutData(exImpBtnGrDt);
         exImpBtn.setText("インポート");
-        exImpBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポート");
+        exImpBtn.setToolTipText("例外のインポート");
         exImpBtn.setFont(new Font(display, "ＭＳ ゴシック", 18, SWT.NORMAL));
         // actionBtns.add(exImpBtn);
         exImpBtn.addSelectionListener(new SelectionAdapter() {
@@ -1096,8 +1096,8 @@ public class Main implements PropertyChangeListener {
         // exceptionCompareBtnGrDt.heightHint = 30;
         exCmpBtnGrDt.horizontalSpan = 2;
         exCmpBtn.setLayoutData(exCmpBtnGrDt);
-        exCmpBtn.setText("差分確認");
-        exCmpBtn.setToolTipText("セキュリティ制御(サニタイザ)の差分確認");
+        exCmpBtn.setText("インポート済みチェック");
+        exCmpBtn.setToolTipText("例外が正しくインポートされているかを確認します。");
         exCmpBtn.setFont(new Font(display, "ＭＳ ゴシック", 13, SWT.NORMAL));
         // actionBtns.add(exCmpBtn);
         exCmpBtn.addSelectionListener(new SelectionAdapter() {
@@ -1111,7 +1111,7 @@ public class Main implements PropertyChangeListener {
         GridData exSklBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
         exSklBtn.setLayoutData(exSklBtnGrDt);
         exSklBtn.setText("スケルトンJSON出力");
-        exSklBtn.setToolTipText("セキュリティ制御(サニタイザ)のインポートJSONファイルのスケルトン生成");
+        exSklBtn.setToolTipText("例外のインポートJSONファイルのスケルトン生成");
         exSklBtn.setFont(new Font(display, "ＭＳ ゴシック", 10, SWT.NORMAL));
         exSklBtn.addSelectionListener(new SelectionAdapter() {
             @Override
