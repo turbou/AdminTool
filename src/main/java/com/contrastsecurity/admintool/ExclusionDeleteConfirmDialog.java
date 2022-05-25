@@ -207,7 +207,7 @@ public class ExclusionDeleteConfirmDialog extends Dialog {
         item.setText(3, exclusion.getName());
         item.setText(4, exclusion.getType());
         if (exclusion.getType().equals("INPUT")) {
-            if (exclusion.getInput_name().isEmpty()) {
+            if (exclusion.getInput_name() == null || exclusion.getInput_name().isEmpty()) {
                 item.setText(5, exclusion.getInput_type());
             } else {
                 item.setText(5, String.format("%s - %s", exclusion.getInput_type(), exclusion.getInput_name()));
