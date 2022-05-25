@@ -78,8 +78,8 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
             Api groupsApi = new GroupsApi(this.shell, this.ps, this.org);
             try {
                 List<CustomGroup> customGroups = (List<CustomGroup>) groupsApi.get();
-                SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 10);
-                sub2Monitor.beginTask("", customGroups.size());
+                SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 20);
+                sub1Monitor.beginTask("", customGroups.size());
                 for (CustomGroup customGroup : customGroups) {
                     monitor.subTask(String.format("アプリケーショングループの情報を取得...%s", customGroup.getName()));
                     List<ApplicationInCustomGroup> apps = customGroup.getApplications();
@@ -93,17 +93,17 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
                             }
                         }
                     }
-                    sub2Monitor.worked(1);
+                    sub1Monitor.worked(1);
                 }
-                sub2Monitor.done();
+                sub1Monitor.done();
             } catch (ApiException ae) {
             }
             // アプリケーション一覧を取得
             monitor.subTask("アプリケーション一覧の情報を取得...");
             Api applicationsApi = new ApplicationsApi(this.shell, this.ps, this.org);
             List<Application> applications = (List<Application>) applicationsApi.get();
-            SubProgressMonitor sub3Monitor = new SubProgressMonitor(monitor, 80);
-            sub3Monitor.beginTask("", applications.size());
+            SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 80);
+            sub2Monitor.beginTask("", applications.size());
             for (Application app : applications) {
                 monitor.subTask(String.format("アプリケーション一覧の情報を取得...%s", app.getName()));
                 // if (app.getLicense().getLevel().equals("Unlicensed")) {
@@ -116,9 +116,10 @@ public class AppsGetWithProgress implements IRunnableWithProgress {
                 } else {
                     fullAppMap.put(String.format("%s", app.getName()), new AppInfo(this.org, app.getName(), app.getApp_id()));
                 }
-                sub3Monitor.worked(1);
+                sub2Monitor.worked(1);
+                Thread.sleep(10);
             }
-            sub3Monitor.done();
+            sub2Monitor.done();
             Thread.sleep(500);
         } catch (Exception e) {
             throw new InvocationTargetException(e);

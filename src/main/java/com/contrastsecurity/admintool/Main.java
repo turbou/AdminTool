@@ -121,6 +121,8 @@ public class Main implements PropertyChangeListener {
 
     private AdminToolShell shell;
 
+    private Organization currentOrg;
+
     private List<Button> actionBtns;
     private CTabFolder mainTabFolder;
 
@@ -258,12 +260,16 @@ public class Main implements PropertyChangeListener {
 
             @Override
             public void shellActivated(ShellEvent event) {
-                List<Organization> orgs = getValidOrganizations();
-                if (orgs.isEmpty()) {
+                Organization org = getValidOrganization();
+                if (org == null) {
                     actionBtns.forEach(b -> b.setEnabled(false));
                     settingBtn.setText("このボタンから基本設定を行ってください。");
                     uiReset();
                 } else {
+                    if (currentOrg != null && !currentOrg.equals(org)) {
+                        uiReset();
+                    }
+                    currentOrg = org;
                     actionBtns.forEach(b -> b.setEnabled(true));
                     uiUpdateForExclusionButton();
                     settingBtn.setText("設定");
@@ -1205,6 +1211,18 @@ public class Main implements PropertyChangeListener {
     }
 
     private void uiReset() {
+        // src
+        srcListFilter.setText("");
+        srcList.removeAll();
+        srcApps.clear();
+        // dst
+        dstListFilter.setText("");
+        dstList.removeAll();
+        dstApps.clear();
+        // full
+        if (fullAppMap != null) {
+            fullAppMap.clear();
+        }
     }
 
     private void uiUpdate() {
@@ -1254,34 +1272,11 @@ public class Main implements PropertyChangeListener {
         return null;
     }
 
-    public List<Organization> getValidOrganizations() {
-        List<Organization> orgs = new ArrayList<Organization>();
-        String orgJsonStr = ps.getString(PreferenceConstants.TARGET_ORGS);
-        if (orgJsonStr.trim().length() > 0) {
-            try {
-                List<Organization> orgList = new Gson().fromJson(orgJsonStr, new TypeToken<List<Organization>>() {
-                }.getType());
-                for (Organization org : orgList) {
-                    if (org != null && org.isValid()) {
-                        orgs.add(org);
-                    }
-                }
-            } catch (JsonSyntaxException e) {
-                return orgs;
-            }
-        }
-        return orgs;
-    }
-
     public void setWindowTitle() {
         String text = null;
-        List<Organization> validOrgs = getValidOrganizations();
-        if (!validOrgs.isEmpty()) {
-            List<String> orgNameList = new ArrayList<String>();
-            for (Organization validOrg : validOrgs) {
-                orgNameList.add(validOrg.getName());
-            }
-            text = String.join(", ", orgNameList);
+        Organization validOrg = getValidOrganization();
+        if (validOrg != null) {
+            text = validOrg.getName();
         }
         if (text == null || text.isEmpty()) {
             this.shell.setText(String.format(WINDOW_TITLE, "組織未設定"));
