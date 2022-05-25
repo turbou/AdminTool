@@ -84,7 +84,7 @@ public class ExclusionImportResultDialog extends Dialog {
         tableTitleLbl.setLayoutData(tableTitleLblGrDt);
         tableTitleLbl.setText("インポートに失敗したデータは下のリストに表示されます。");
 
-        failedControlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL);
+        failedControlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
         tableGrDt.horizontalSpan = 2;
         failedControlsTable.setLayoutData(tableGrDt);
