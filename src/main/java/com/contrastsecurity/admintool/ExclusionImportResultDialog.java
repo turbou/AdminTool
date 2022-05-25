@@ -84,7 +84,7 @@ public class ExclusionImportResultDialog extends Dialog {
         tableTitleLbl.setLayoutData(tableTitleLblGrDt);
         tableTitleLbl.setText("インポートに失敗したデータは下のリストに表示されます。");
 
-        failedControlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
+        failedControlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
         tableGrDt.horizontalSpan = 2;
         failedControlsTable.setLayoutData(tableGrDt);
@@ -98,13 +98,10 @@ public class ExclusionImportResultDialog extends Dialog {
         column1.setText("名前");
         TableColumn column2 = new TableColumn(failedControlsTable, SWT.CENTER);
         column2.setWidth(100);
-        column2.setText("言語");
+        column2.setText("種類");
         TableColumn column3 = new TableColumn(failedControlsTable, SWT.LEFT);
         column3.setWidth(250);
-        column3.setText("API");
-        TableColumn column4 = new TableColumn(failedControlsTable, SWT.LEFT);
-        column4.setWidth(300);
-        column4.setText("備考");
+        column3.setText("備考");
 
         failureExclusions.forEach(sc -> addColToControlTable(sc, -1));
 
@@ -123,25 +120,23 @@ public class ExclusionImportResultDialog extends Dialog {
         }
         TableEditor editor = new TableEditor(failedControlsTable);
 
-        Text text1 = new Text(failedControlsTable, SWT.SINGLE);
-        text1.setEditable(false);
-        text1.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        text1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        text1.setText(exclusion.getName());
-        text1.addMouseListener(new MouseAdapter() {
+        Text text = new Text(failedControlsTable, SWT.SINGLE);
+        text.setEditable(false);
+        text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text.setText(exclusion.getName());
+        text.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                text1.selectAll();
+                text.selectAll();
             }
         });
-        text1.pack();
+        text.pack();
         editor.grabHorizontal = true;
         editor.horizontalAlignment = SWT.LEFT;
-        editor.setEditor(text1, item, 1);
-        // item.setText(1, exclusion.getName());
-        // item.setText(2, control.getLanguage());
-        // item.setText(3, control.getApi());
-        item.setText(4, exclusion.getRemarks());
+        editor.setEditor(text, item, 1);
+        item.setText(2, exclusion.getType());
+        item.setText(3, exclusion.getRemarks());
     }
 
     @Override
@@ -151,7 +146,7 @@ public class ExclusionImportResultDialog extends Dialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(640, 480);
+        return new Point(720, 480);
     }
 
     @Override

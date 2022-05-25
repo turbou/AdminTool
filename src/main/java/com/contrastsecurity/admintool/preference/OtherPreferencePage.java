@@ -38,8 +38,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 public class OtherPreferencePage extends PreferencePage {
@@ -95,12 +97,22 @@ public class OtherPreferencePage extends PreferencePage {
         scDelSleepTxt = new Text(scGrp, SWT.BORDER);
         scDelSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         scDelSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_SC_DEL));
+        scDelSleepTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                scDelSleepTxt.selectAll();
+            }
+        });
 
         // ========== 登録間隔スリープ ========== //
         new Label(scGrp, SWT.LEFT).setText("登録：");
         scImpSleepTxt = new Text(scGrp, SWT.BORDER);
         scImpSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         scImpSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_SC_IMP));
+        scImpSleepTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                scImpSleepTxt.selectAll();
+            }
+        });
 
         Group exGrp = new Group(ctrlGrp, SWT.NONE);
         GridLayout exGrpLt = new GridLayout(2, false);
@@ -117,12 +129,22 @@ public class OtherPreferencePage extends PreferencePage {
         exDelSleepTxt = new Text(exGrp, SWT.BORDER);
         exDelSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         exDelSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_EX_DEL));
+        exDelSleepTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                exDelSleepTxt.selectAll();
+            }
+        });
 
         // ========== 登録間隔スリープ ========== //
         new Label(exGrp, SWT.LEFT).setText("登録：");
         exImpSleepTxt = new Text(exGrp, SWT.BORDER);
         exImpSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         exImpSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_EX_IMP));
+        exImpSleepTxt.addListener(SWT.FocusIn, new Listener() {
+            public void handleEvent(Event e) {
+                exImpSleepTxt.selectAll();
+            }
+        });
 
         Composite buttonGrp = new Composite(parent, SWT.NONE);
         GridLayout buttonGrpLt = new GridLayout(2, false);
