@@ -44,8 +44,11 @@ import org.eclipse.swt.widgets.Text;
 
 public class OtherPreferencePage extends PreferencePage {
 
-    private Text vulSleepTxt;
-    private Text libSleepTxt;
+    private Text scDelSleepTxt;
+    private Text scImpSleepTxt;
+
+    private Text exDelSleepTxt;
+    private Text exImpSleepTxt;
 
     public OtherPreferencePage() {
         super("その他設定");
@@ -64,26 +67,62 @@ public class OtherPreferencePage extends PreferencePage {
         composite.setLayout(compositeLt);
 
         Group ctrlGrp = new Group(composite, SWT.NONE);
-        GridLayout proxyGrpLt = new GridLayout(2, false);
+        GridLayout proxyGrpLt = new GridLayout(1, false);
         proxyGrpLt.marginWidth = 15;
         proxyGrpLt.horizontalSpacing = 10;
+        proxyGrpLt.verticalSpacing = 10;
         ctrlGrp.setLayout(proxyGrpLt);
         GridData proxyGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
         // proxyGrpGrDt.horizontalSpan = 4;
         ctrlGrp.setLayoutData(proxyGrpGrDt);
-        ctrlGrp.setText("スリープ制御");
+        ctrlGrp.setText("スリープ設定");
 
-        // ========== 脆弱性取得ごとスリープ ========== //
-        new Label(ctrlGrp, SWT.LEFT).setText("脆弱性取得間隔スリープ（ミリ秒）：");
-        vulSleepTxt = new Text(ctrlGrp, SWT.BORDER);
-        vulSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        vulSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_EX_DEL));
+        Label descLbl = new Label(ctrlGrp, SWT.LEFT);
+        descLbl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        descLbl.setText("APIを発行する間隔をミリ秒単位で指定できます。タイムアウトが発生する場合や、TeamServer側の負荷に応じて調整してください。");
 
-        // ========== ライブラリ取得ごとスリープ ========== //
-        new Label(ctrlGrp, SWT.LEFT).setText("ライブラリ取得間隔スリープ（ミリ秒）：");
-        libSleepTxt = new Text(ctrlGrp, SWT.BORDER);
-        libSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        libSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_LIB));
+        Group scGrp = new Group(ctrlGrp, SWT.NONE);
+        GridLayout scGrpLt = new GridLayout(2, false);
+        scGrpLt.marginWidth = 15;
+        scGrpLt.horizontalSpacing = 10;
+        scGrp.setLayout(scGrpLt);
+        GridData scGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        scGrp.setLayoutData(scGrpGrDt);
+        scGrp.setText("セキュリティ制御");
+
+        // ========== 削除間隔スリープ ========== //
+        new Label(scGrp, SWT.LEFT).setText("削除：");
+        scDelSleepTxt = new Text(scGrp, SWT.BORDER);
+        scDelSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        scDelSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_SC_DEL));
+
+        // ========== 登録間隔スリープ ========== //
+        new Label(scGrp, SWT.LEFT).setText("登録：");
+        scImpSleepTxt = new Text(scGrp, SWT.BORDER);
+        scImpSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        scImpSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_SC_IMP));
+
+        Group exGrp = new Group(ctrlGrp, SWT.NONE);
+        GridLayout exGrpLt = new GridLayout(2, false);
+        exGrpLt.marginWidth = 15;
+        exGrpLt.horizontalSpacing = 10;
+        exGrp.setLayout(exGrpLt);
+        GridData exGrpGrDt = new GridData(GridData.FILL_HORIZONTAL);
+        // exGrpGrDt.horizontalSpan = 4;
+        exGrp.setLayoutData(exGrpGrDt);
+        exGrp.setText("例外");
+
+        // ========== 削除間隔スリープ ========== //
+        new Label(exGrp, SWT.LEFT).setText("削除：");
+        exDelSleepTxt = new Text(exGrp, SWT.BORDER);
+        exDelSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        exDelSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_EX_DEL));
+
+        // ========== 登録間隔スリープ ========== //
+        new Label(exGrp, SWT.LEFT).setText("登録：");
+        exImpSleepTxt = new Text(exGrp, SWT.BORDER);
+        exImpSleepTxt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        exImpSleepTxt.setText(ps.getString(PreferenceConstants.SLEEP_EX_IMP));
 
         Composite buttonGrp = new Composite(parent, SWT.NONE);
         GridLayout buttonGrpLt = new GridLayout(2, false);
@@ -104,8 +143,10 @@ public class OtherPreferencePage extends PreferencePage {
         defaultBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                vulSleepTxt.setText(ps.getDefaultString(PreferenceConstants.SLEEP_EX_DEL));
-                libSleepTxt.setText(ps.getDefaultString(PreferenceConstants.SLEEP_LIB));
+                scDelSleepTxt.setText(ps.getDefaultString(PreferenceConstants.SLEEP_SC_DEL));
+                scImpSleepTxt.setText(ps.getDefaultString(PreferenceConstants.SLEEP_SC_IMP));
+                exDelSleepTxt.setText(ps.getDefaultString(PreferenceConstants.SLEEP_EX_DEL));
+                exImpSleepTxt.setText(ps.getDefaultString(PreferenceConstants.SLEEP_EX_IMP));
             }
         });
 
@@ -132,22 +173,40 @@ public class OtherPreferencePage extends PreferencePage {
             return true;
         }
         List<String> errors = new ArrayList<String>();
-        if (this.vulSleepTxt.getText().isEmpty()) {
-            errors.add("・脆弱性取得間隔スリープを指定してください。");
+        // セキュリティ制御チェック
+        if (this.scDelSleepTxt.getText().isEmpty()) {
+            errors.add("・セキュリティ制御の削除間隔スリープを指定してください。");
         } else {
-            if (!StringUtils.isNumeric(this.vulSleepTxt.getText())) {
-                errors.add("・脆弱性取得間隔スリープは数値を指定してください。");
+            if (!StringUtils.isNumeric(this.scDelSleepTxt.getText())) {
+                errors.add("・セキュリティ制御の削除間隔スリープは数値を指定してください。");
             }
         }
-        if (this.libSleepTxt.getText().isEmpty()) {
-            errors.add("・ライブラリ取得間隔スリープを指定してください。");
+        if (this.scImpSleepTxt.getText().isEmpty()) {
+            errors.add("・セキュリティ制御の登録間隔スリープを指定してください。");
         } else {
-            if (!StringUtils.isNumeric(this.libSleepTxt.getText())) {
-                errors.add("・ライブラリ取得間隔スリープは数値を指定してください。");
+            if (!StringUtils.isNumeric(this.scImpSleepTxt.getText())) {
+                errors.add("・セキュリティ制御の登録間隔スリープは数値を指定してください。");
             }
         }
-        ps.setValue(PreferenceConstants.SLEEP_EX_DEL, this.vulSleepTxt.getText());
-        ps.setValue(PreferenceConstants.SLEEP_LIB, this.libSleepTxt.getText());
+        // 例外チェック
+        if (this.exDelSleepTxt.getText().isEmpty()) {
+            errors.add("・例外の削除間隔スリープを指定してください。");
+        } else {
+            if (!StringUtils.isNumeric(this.exDelSleepTxt.getText())) {
+                errors.add("・例外の削除間隔スリープは数値を指定してください。");
+            }
+        }
+        if (this.exImpSleepTxt.getText().isEmpty()) {
+            errors.add("・例外の登録間隔スリープを指定してください。");
+        } else {
+            if (!StringUtils.isNumeric(this.exImpSleepTxt.getText())) {
+                errors.add("・例外の登録間隔スリープは数値を指定してください。");
+            }
+        }
+        ps.setValue(PreferenceConstants.SLEEP_SC_DEL, this.scDelSleepTxt.getText());
+        ps.setValue(PreferenceConstants.SLEEP_SC_IMP, this.scImpSleepTxt.getText());
+        ps.setValue(PreferenceConstants.SLEEP_EX_DEL, this.exDelSleepTxt.getText());
+        ps.setValue(PreferenceConstants.SLEEP_EX_IMP, this.exImpSleepTxt.getText());
         if (!errors.isEmpty()) {
             MessageDialog.openError(getShell(), "その他設定", String.join("\r\n", errors));
             return false;

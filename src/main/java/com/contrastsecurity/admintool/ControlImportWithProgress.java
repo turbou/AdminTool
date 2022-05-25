@@ -49,6 +49,7 @@ import com.contrastsecurity.admintool.json.RuleDeserializer;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
 import com.contrastsecurity.admintool.model.SecurityControl;
+import com.contrastsecurity.admintool.preference.PreferenceConstants;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
@@ -96,6 +97,7 @@ public class ControlImportWithProgress implements IRunnableWithProgress {
         monitor.subTask("セキュリティ制御の登録...");
         SubProgressMonitor sub2Monitor = new SubProgressMonitor(monitor, 90);
         sub2Monitor.beginTask("", controls.size());
+        int sleep = this.ps.getInt(PreferenceConstants.SLEEP_SC_IMP);
         try {
             int cnt = 1;
             for (SecurityControl control : controls) {
@@ -130,7 +132,7 @@ public class ControlImportWithProgress implements IRunnableWithProgress {
                     this.failureControls.add(control);
                 }
                 sub2Monitor.worked(1);
-                Thread.sleep(100);
+                Thread.sleep(sleep);
             }
             Thread.sleep(500);
         } catch (Exception e) {

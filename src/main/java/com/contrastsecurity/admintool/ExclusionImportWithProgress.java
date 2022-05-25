@@ -106,7 +106,7 @@ public class ExclusionImportWithProgress implements IRunnableWithProgress {
         Organization org = this.appInfo.getOrganization();
         String appName = this.appInfo.getAppName();
         String appId = this.appInfo.getAppId();
-        int sleep = this.ps.getInt(PreferenceConstants.SLEEP_LIB);
+        int sleep = this.ps.getInt(PreferenceConstants.SLEEP_EX_IMP);
         try {
             int cnt = 1;
             for (Exclusion exclusion : exclusions) {

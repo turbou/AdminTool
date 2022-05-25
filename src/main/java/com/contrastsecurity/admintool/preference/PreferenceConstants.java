@@ -47,8 +47,11 @@ public class PreferenceConstants {
     public static final String EXCLUSION_IMP_REP_BEF_WORD = new String("com.contrastsecurity.admindltool.exclusion_imp_rep_bef_word");
     public static final String EXCLUSION_IMP_REP_AFT_WORD = new String("com.contrastsecurity.admindltool.exclusion_imp_rep_aft_word");
 
+    public static final String SLEEP_SC_DEL = new String("com.contrastsecurity.admintool.sleep_sc_del");
+    public static final String SLEEP_SC_IMP = new String("com.contrastsecurity.csvdltool.sleep_sc_imp");
+
     public static final String SLEEP_EX_DEL = new String("com.contrastsecurity.admintool.sleep_ex_del");
-    public static final String SLEEP_LIB = new String("com.contrastsecurity.csvdltool.sleep_lib");
+    public static final String SLEEP_EX_IMP = new String("com.contrastsecurity.csvdltool.sleep_ex_imp");
 
     public static final String OPENED_MAIN_TAB_IDX = new String("com.contrastsecurity.csvdltool.opened_main_tab_idx");
     public static final String MEM_WIDTH = new String("com.contrastsecurity.csvdltool.mem_width");

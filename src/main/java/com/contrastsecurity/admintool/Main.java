@@ -195,8 +195,10 @@ public class Main implements PropertyChangeListener {
             this.ps.setDefault(PreferenceConstants.CONNECTION_TIMEOUT, 3000);
             this.ps.setDefault(PreferenceConstants.SOCKET_TIMEOUT, 3000);
 
+            this.ps.setDefault(PreferenceConstants.SLEEP_SC_DEL, 100);
+            this.ps.setDefault(PreferenceConstants.SLEEP_SC_IMP, 100);
             this.ps.setDefault(PreferenceConstants.SLEEP_EX_DEL, 100);
-            this.ps.setDefault(PreferenceConstants.SLEEP_LIB, 100);
+            this.ps.setDefault(PreferenceConstants.SLEEP_EX_IMP, 100);
 
             this.ps.setDefault(PreferenceConstants.OPENED_MAIN_TAB_IDX, 0);
 

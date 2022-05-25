@@ -41,6 +41,7 @@ import com.contrastsecurity.admintool.api.ControlDeleteApi;
 import com.contrastsecurity.admintool.api.ControlsApi;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.SecurityControl;
+import com.contrastsecurity.admintool.preference.PreferenceConstants;
 
 public class ControlDeleteWithProgress implements IRunnableWithProgress {
 
@@ -65,6 +66,7 @@ public class ControlDeleteWithProgress implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         monitor.beginTask("セキュリティ制御の削除...", 100);
         Thread.sleep(300);
+        int sleep = this.ps.getInt(PreferenceConstants.SLEEP_SC_DEL);
         try {
             monitor.subTask("セキュリティ制御の情報を取得...");
             SubProgressMonitor sub1Monitor = new SubProgressMonitor(monitor, 100);
@@ -139,7 +141,7 @@ public class ControlDeleteWithProgress implements IRunnableWithProgress {
                 Api controlDeleteApi = new ControlDeleteApi(this.shell, this.ps, org, control.getId());
                 controlDeleteApi.delete();
                 sub2Monitor.worked(1);
-                Thread.sleep(100);
+                Thread.sleep(sleep);
             }
             sub2Monitor.done();
             Thread.sleep(500);
