@@ -543,7 +543,7 @@ public class Main implements PropertyChangeListener {
                 }
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 try {
-                    String fileName = dir + "\\securitycontrol_skeleton.json";
+                    String fileName = dir + "\\control_skeleton.json";
                     Writer writer = new FileWriter(fileName);
                     List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
                     Map<String, Object> map = new HashMap<String, Object>();
@@ -559,8 +559,7 @@ public class Main implements PropertyChangeListener {
                     map2.put("name", "Validator_bar");
                     map2.put("type", "INPUT_VALIDATOR");
                     map2.put("all_rules", false);
-                    String[] array = { "hql-injection", "sql-injection" };
-                    map2.put("rules", Arrays.asList(array));
+                    map2.put("rules", Arrays.asList(new String[] { "hql-injection", "sql-injection" }));
                     mapList.add(map2);
                     gson.toJson(mapList, writer);
                     writer.close();
@@ -1023,13 +1022,15 @@ public class Main implements PropertyChangeListener {
 
         // ========== インポートボタン ==========
         Group exImpGrp = new Group(exBtnGrp, SWT.NULL);
-        GridLayout exImpGrpLt = new GridLayout(3, false);
+        GridLayout exImpGrpLt = new GridLayout(4, false);
         exImpGrpLt.marginWidth = 2;
         exImpGrpLt.marginHeight = 0;
         exImpGrp.setLayout(exImpGrpLt);
         GridData exImpGrpGrDt = new GridData(GridData.FILL_BOTH);
         exImpGrpGrDt.horizontalSpan = 2;
         exImpGrp.setLayoutData(exImpGrpGrDt);
+
+        new Label(exImpGrp, SWT.NONE).setText("URLのパス置換: ");
 
         exImpRepBefWordTxt = new Text(exImpGrp, SWT.BORDER);
         exImpRepBefWordTxt.setText(ps.getString(PreferenceConstants.EXCLUSION_IMP_REP_BEF_WORD));
@@ -1058,7 +1059,7 @@ public class Main implements PropertyChangeListener {
         exImpBtn = new Button(exImpGrp, SWT.PUSH);
         GridData exImpBtnGrDt = new GridData(GridData.FILL_BOTH);
         exImpBtnGrDt.heightHint = 50;
-        exImpBtnGrDt.horizontalSpan = 3;
+        exImpBtnGrDt.horizontalSpan = 4;
         exImpBtn.setLayoutData(exImpBtnGrDt);
         exImpBtn.setText("インポート");
         exImpBtn.setToolTipText("例外のインポート");
@@ -1068,6 +1069,12 @@ public class Main implements PropertyChangeListener {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 if (dstApps.size() != 1) {
+                    return;
+                }
+                String exImpRepBefWord = exImpRepBefWordTxt.getText().trim();
+                String exImpRepAftWord = exImpRepAftWordTxt.getText().trim();
+                if ((!exImpRepBefWord.isEmpty() && exImpRepAftWord.isEmpty()) || (exImpRepBefWord.isEmpty() && !exImpRepAftWord.isEmpty())) {
+                    MessageDialog.openError(shell, "例外のインポート", "URLのパス置換を設定する場合は両方とも設定してください。");
                     return;
                 }
                 AppInfo appInfo = fullAppMap.get(dstApps.get(0));
@@ -1116,6 +1123,64 @@ public class Main implements PropertyChangeListener {
         exSklBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
+                DirectoryDialog dialog = new DirectoryDialog(shell);
+                dialog.setText("出力先フォルダを指定してください。");
+                String dir = dialog.open();
+                if (dir == null) {
+                    return;
+                }
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                try {
+                    String fileName = dir + "\\exclusion_skeleton.json";
+                    Writer writer = new FileWriter(fileName);
+                    List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
+                    Map<String, Object> map1 = new HashMap<String, Object>();
+                    map1.put("name", "Code_foo");
+                    map1.put("type", "CODE");
+                    map1.put("codes", Arrays.asList(new String[] { "jp.co.contrast.foo", "jp.co.contrast.bar" }));
+                    map1.put("all_rules", true);
+                    map1.put("all_assessment_rules", false);
+                    map1.put("all_protection_rules", false);
+                    map1.put("assessment_rules", Arrays.asList(new String[0]));
+                    map1.put("protection_rules", Arrays.asList(new String[0]));
+                    map1.put("input_name", "");
+                    map1.put("input_type", "");
+                    mapList.add(map1);
+
+                    Map<String, Object> map2 = new HashMap<String, Object>();
+                    map2.put("name", "Input_bar");
+                    map2.put("type", "INPUT");
+                    map2.put("urls", Arrays.asList(new String[] { "/test1", "/test2" }));
+                    map2.put("all_rules", true);
+                    map2.put("all_assessment_rules", false);
+                    map2.put("all_protection_rules", false);
+                    map2.put("assessment_rules", Arrays.asList(new String[0]));
+                    map2.put("protection_rules", Arrays.asList(new String[0]));
+                    map2.put("input_name", "");
+                    map2.put("input_type", "");
+                    map2.put("url_pattern_type", "ONLY");
+                    mapList.add(map2);
+
+                    Map<String, Object> map3 = new HashMap<String, Object>();
+                    map3.put("name", "URL_baz");
+                    map3.put("type", "URL");
+                    map3.put("urls", Arrays.asList(new String[] { "crypto-bad-ciphers" }));
+                    map3.put("all_rules", false);
+                    map3.put("all_assessment_rules", false);
+                    map3.put("all_protection_rules", false);
+                    map3.put("assessment_rules", Arrays.asList(new String[0]));
+                    map3.put("protection_rules", Arrays.asList(new String[0]));
+                    map3.put("input_name", "");
+                    map3.put("input_type", "");
+                    map3.put("url_pattern_type", "ONLY");
+
+                    mapList.add(map3);
+                    gson.toJson(mapList, writer);
+                    writer.close();
+                    MessageDialog.openInformation(shell, "例外のスケルトンJSON出力", String.format("スケルトンJSONファイルを出力しました。\r\n%s", fileName));
+                } catch (Exception e) {
+                    MessageDialog.openError(shell, "例外のスケルトンJSON出力", e.getMessage());
+                }
             }
         });
 

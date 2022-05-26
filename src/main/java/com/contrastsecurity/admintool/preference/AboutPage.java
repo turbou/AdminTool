@@ -75,13 +75,13 @@ public class AboutPage extends PreferencePage {
         Label versionValueLbl = new Label(appGrp, SWT.NONE);
         GridData versionValueLblGrDt = new GridData();
         versionValueLbl.setLayoutData(versionValueLblGrDt);
-        versionValueLbl.setText("1.7.0"); //$NON-NLS-1$
+        versionValueLbl.setText("1.0.0"); //$NON-NLS-1$
 
         Label copyrightLbl = new Label(appGrp, SWT.NONE);
         GridData copyrightLblGrDt = new GridData();
         copyrightLblGrDt.horizontalSpan = 2;
         copyrightLbl.setLayoutData(copyrightLblGrDt);
-        copyrightLbl.setText("Copyright (c) 2020 Contrast Security Japan G.K."); //$NON-NLS-1$
+        copyrightLbl.setText("Copyright (c) 2022 Contrast Security Japan G.K."); //$NON-NLS-1$
 
         Composite licenseGrp = new Composite(parent, SWT.NONE);
         GridLayout licenseGrpGrLt = new GridLayout(1, false);
