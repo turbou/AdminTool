@@ -121,21 +121,21 @@ public class ControlImportResultDialog extends Dialog {
         }
         TableEditor editor = new TableEditor(failedControlsTable);
 
-        Text text1 = new Text(failedControlsTable, SWT.SINGLE);
-        text1.setEditable(false);
-        text1.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        text1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        text1.setText(control.getName());
-        text1.addMouseListener(new MouseAdapter() {
+        Text text = new Text(failedControlsTable, SWT.SINGLE);
+        text.setEditable(false);
+        text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text.setText(control.getName());
+        text.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                text1.selectAll();
+                text.selectAll();
             }
         });
-        text1.pack();
+        text.pack();
         editor.grabHorizontal = true;
         editor.horizontalAlignment = SWT.LEFT;
-        editor.setEditor(text1, item, 1);
+        editor.setEditor(text, item, 1);
         // item.setText(1, exclusion.getName());
         // item.setText(2, control.getLanguage());
         // item.setText(3, control.getApi());

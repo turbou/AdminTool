@@ -24,9 +24,12 @@
 package com.contrastsecurity.admintool.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class Exclusion {
     @Expose(serialize = true)
@@ -69,6 +72,7 @@ public class Exclusion {
     private boolean all_protection_rules;
 
     @Expose(serialize = true)
+    @SerializedName(value = "assessment_rules", alternate = { "assess_rules" })
     private List<AssessmentRule> assessment_rules;
 
     @Expose(serialize = true)
@@ -243,11 +247,32 @@ public class Exclusion {
         List<String> strList = new ArrayList<String>();
         strList.add("name: " + this.name);
         strList.add("type: " + this.type);
-        // strList.add("all_rules: " + this.all_rules);
-        // if (this.rules != null) {
-        // Collections.sort(this.rules);
-        // strList.add("rules: " + String.join(", ", this.rules.stream().map(rule -> rule.getName()).collect(Collectors.toList())));
-        // }
+        strList.add("input_type: " + this.input_type);
+        strList.add("input_name: " + this.input_name);
+        strList.add("all_rules: " + this.all_rules);
+        strList.add("all_assessment_rules: " + this.all_assessment_rules);
+        strList.add("all_protection_rules   : " + this.all_protection_rules);
+        strList.add("url_pattern_type: " + this.url_pattern_type);
+        if (this.codes != null && !this.codes.isEmpty()) {
+            Collections.sort(this.codes);
+            strList.add("codes: " + String.join(", ", this.codes));
+        }
+        if (this.urls != null && !this.urls.isEmpty()) {
+            Collections.sort(this.urls);
+            if (this.replaceBef != null && this.replaceAft != null) {
+                strList.add("urls: " + String.join(", ", this.urls.stream().map(s -> s.replaceAll(this.replaceBef, this.replaceAft)).collect(Collectors.toList())));
+            } else {
+                strList.add("urls: " + String.join(", ", this.urls));
+            }
+        }
+        if (this.assessment_rules != null && !this.assessment_rules.isEmpty()) {
+            Collections.sort(this.assessment_rules);
+            strList.add("assessment_rules: " + String.join(", ", this.assessment_rules.stream().map(r -> r.getName()).collect(Collectors.toList())));
+        }
+        if (this.protection_rules != null && !this.protection_rules.isEmpty()) {
+            Collections.sort(this.protection_rules);
+            strList.add("protection_rules: " + String.join(", ", this.protection_rules.stream().map(r -> r.getUuid()).collect(Collectors.toList())));
+        }
         return String.join(", ", strList);
     }
 

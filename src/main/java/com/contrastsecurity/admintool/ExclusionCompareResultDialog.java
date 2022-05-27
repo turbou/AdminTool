@@ -28,6 +28,9 @@ import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,11 +41,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 
 public class ExclusionCompareResultDialog extends Dialog {
 
     private List<String> problemStrs;
-    private Table failedControlsTable;
+    private Table table;
 
     public ExclusionCompareResultDialog(Shell parentShell, List<String> problemStrs) {
         super(parentShell);
@@ -62,31 +66,47 @@ public class ExclusionCompareResultDialog extends Dialog {
         descLbl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         descLbl.setText("※ 例外の名前が一致しないだけでなく、設定内容に差異がある場合も一覧に表示されます。");
 
-        failedControlsTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
+        table = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData tableGrDt = new GridData(GridData.FILL_BOTH);
-        failedControlsTable.setLayoutData(tableGrDt);
-        failedControlsTable.setLinesVisible(true);
-        failedControlsTable.setHeaderVisible(true);
-        TableColumn column0 = new TableColumn(failedControlsTable, SWT.NONE);
+        table.setLayoutData(tableGrDt);
+        table.setLinesVisible(true);
+        table.setHeaderVisible(true);
+        TableColumn column0 = new TableColumn(table, SWT.NONE);
         column0.setWidth(0);
         column0.setResizable(false);
-        TableColumn column1 = new TableColumn(failedControlsTable, SWT.LEFT);
+        TableColumn column1 = new TableColumn(table, SWT.LEFT);
         column1.setWidth(640);
         column1.setText("存在しない例外");
 
-        problemStrs.forEach(str -> addColToControlTable(str, -1));
+        problemStrs.forEach(str -> addColToTable(str, -1));
 
         return composite;
     }
 
-    private void addColToControlTable(String str, int index) {
+    private void addColToTable(String str, int index) {
         TableItem item = null;
         if (index > 0) {
-            item = new TableItem(failedControlsTable, SWT.CENTER, index);
+            item = new TableItem(table, SWT.CENTER, index);
         } else {
-            item = new TableItem(failedControlsTable, SWT.CENTER);
+            item = new TableItem(table, SWT.CENTER);
         }
-        item.setText(1, str);
+        TableEditor editor = new TableEditor(table);
+
+        Text text = new Text(table, SWT.SINGLE);
+        text.setEditable(false);
+        text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text.setText(str);
+        text.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                text.selectAll();
+            }
+        });
+        text.pack();
+        editor.grabHorizontal = true;
+        editor.horizontalAlignment = SWT.LEFT;
+        editor.setEditor(text, item, 1);
     }
 
     @Override

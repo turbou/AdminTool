@@ -3,7 +3,7 @@ package com.contrastsecurity.admintool.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProtectionPolicy {
+public class ProtectionPolicy implements Comparable<ProtectionPolicy> {
     private String name;
     private String type;
     private String uuid;
@@ -40,4 +40,10 @@ public class ProtectionPolicy {
         strList.add("uuid: " + this.uuid);
         return String.join("\r\n", strList);
     }
+
+    @Override
+    public int compareTo(ProtectionPolicy other) {
+        return uuid.compareTo(other.getUuid());
+    }
+
 }

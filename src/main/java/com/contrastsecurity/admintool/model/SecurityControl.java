@@ -155,7 +155,7 @@ public class SecurityControl {
         strList.add("type: " + this.type);
         strList.add("api: " + this.api);
         strList.add("all_rules: " + this.all_rules);
-        if (this.rules != null) {
+        if (this.rules != null && !this.rules.isEmpty()) {
             Collections.sort(this.rules);
             strList.add("rules: " + String.join(", ", this.rules.stream().map(rule -> rule.getName()).collect(Collectors.toList())));
         }

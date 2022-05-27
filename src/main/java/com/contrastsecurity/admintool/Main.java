@@ -1085,7 +1085,7 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, appInfo, exImpRepBefWordTxt.getText(), exImpRepAftWordTxt.getText(), file);
+                ExclusionImportWithProgress progress = new ExclusionImportWithProgress(shell, ps, appInfo, exImpRepBefWord, exImpRepAftWord, file);
                 ProgressMonitorDialog progDialog = new ExclusionImportProgressMonitorDialog(shell, appInfo);
                 try {
                     progDialog.run(true, true, progress);
@@ -1098,10 +1098,10 @@ public class Main implements PropertyChangeListener {
         });
 
         // ========== 差分確認ボタン ==========
-        exCmpBtn = new Button(exBtnGrp, SWT.PUSH);
+        exCmpBtn = new Button(exImpGrp, SWT.PUSH);
         GridData exCmpBtnGrDt = new GridData(GridData.FILL_HORIZONTAL);
         // exceptionCompareBtnGrDt.heightHint = 30;
-        exCmpBtnGrDt.horizontalSpan = 2;
+        exCmpBtnGrDt.horizontalSpan = 4;
         exCmpBtn.setLayoutData(exCmpBtnGrDt);
         exCmpBtn.setText("インポート済みチェック");
         exCmpBtn.setToolTipText("例外が正しくインポートされているかを確認します。");
@@ -1113,6 +1113,12 @@ public class Main implements PropertyChangeListener {
                 if (dstApps.size() != 1) {
                     return;
                 }
+                String exImpRepBefWord = exImpRepBefWordTxt.getText().trim();
+                String exImpRepAftWord = exImpRepAftWordTxt.getText().trim();
+                if ((!exImpRepBefWord.isEmpty() && exImpRepAftWord.isEmpty()) || (exImpRepBefWord.isEmpty() && !exImpRepAftWord.isEmpty())) {
+                    MessageDialog.openError(shell, "例外のインポート", "URLのパス置換を設定する場合は両方とも設定してください。");
+                    return;
+                }
                 AppInfo appInfo = fullAppMap.get(dstApps.get(0));
                 FileDialog dialog = new FileDialog(shell);
                 dialog.setText("比較する対象のjsonファイルを指定してください。");
@@ -1121,7 +1127,7 @@ public class Main implements PropertyChangeListener {
                 if (file == null) {
                     return;
                 }
-                ExclusionCompareWithProgress progress = new ExclusionCompareWithProgress(shell, ps, appInfo, file);
+                ExclusionCompareWithProgress progress = new ExclusionCompareWithProgress(shell, ps, appInfo, exImpRepBefWord, exImpRepAftWord, file);
                 ProgressMonitorDialog progDialog = new ExclusionCompareProgressMonitorDialog(shell, appInfo);
                 try {
                     progDialog.run(true, true, progress);

@@ -57,15 +57,19 @@ public class ExclusionCompareWithProgress implements IRunnableWithProgress {
 
     private Shell shell;
     private PreferenceStore ps;
-    private AppInfo appInfo;;
+    private AppInfo appInfo;
+    private String replaceBef;
+    private String replaceAft;
     private String filePath;
 
     Logger logger = LogManager.getLogger("admintool");
 
-    public ExclusionCompareWithProgress(Shell shell, PreferenceStore ps, AppInfo appInfo, String filePath) {
+    public ExclusionCompareWithProgress(Shell shell, PreferenceStore ps, AppInfo appInfo, String replaceBef, String replaceAft, String filePath) {
         this.shell = shell;
         this.ps = ps;
         this.appInfo = appInfo;
+        this.replaceBef = replaceBef;
+        this.replaceAft = replaceAft;
         this.filePath = filePath;
     }
 
@@ -90,6 +94,9 @@ public class ExclusionCompareWithProgress implements IRunnableWithProgress {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+        impExclusions.forEach(ex -> ex.setReplaceBef(this.replaceBef));
+        impExclusions.forEach(ex -> ex.setReplaceAft(this.replaceAft));
+
         sub1Monitor.done();
         Thread.sleep(1000);
 
@@ -111,9 +118,19 @@ public class ExclusionCompareWithProgress implements IRunnableWithProgress {
 
         monitor.done();
 
-        List<String> impExclusionStrs = impExclusions.stream().map(sc -> sc.toString()).collect(Collectors.toList());
-        List<String> expExclusionStrs = expExclusions.stream().map(sc -> sc.toString()).collect(Collectors.toList());
+        List<String> impExclusionStrs = impExclusions.stream().map(ex -> ex.toString()).collect(Collectors.toList());
+        List<String> expExclusionStrs = expExclusions.stream().map(ex -> ex.toString()).collect(Collectors.toList());
         List<String> problemStrs = new ArrayList<String>();
+        for (String str : impExclusionStrs) {
+            if (str.contains("IM-AccelPlatform-2022Spring-CRYPTOBADCIPHERS-System-00001")) {
+                System.out.println(str);
+            }
+        }
+        for (String str : expExclusionStrs) {
+            if (str.contains("IM-AccelPlatform-2022Spring-CRYPTOBADCIPHERS-System-00001")) {
+                System.out.println(str);
+            }
+        }
         for (String str : impExclusionStrs) {
             if (!expExclusionStrs.contains(str)) {
                 problemStrs.add(str);
