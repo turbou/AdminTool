@@ -1110,6 +1110,26 @@ public class Main implements PropertyChangeListener {
         exCmpBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
+                if (dstApps.size() != 1) {
+                    return;
+                }
+                AppInfo appInfo = fullAppMap.get(dstApps.get(0));
+                FileDialog dialog = new FileDialog(shell);
+                dialog.setText("比較する対象のjsonファイルを指定してください。");
+                dialog.setFilterExtensions(new String[] { "*.json" });
+                String file = dialog.open();
+                if (file == null) {
+                    return;
+                }
+                ExclusionCompareWithProgress progress = new ExclusionCompareWithProgress(shell, ps, appInfo, file);
+                ProgressMonitorDialog progDialog = new ExclusionCompareProgressMonitorDialog(shell, appInfo);
+                try {
+                    progDialog.run(true, true, progress);
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
