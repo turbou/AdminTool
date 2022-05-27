@@ -514,7 +514,7 @@ public class Main implements PropertyChangeListener {
                     return;
                 }
                 ControlCompareWithProgress progress = new ControlCompareWithProgress(shell, ps, getValidOrganization(), file);
-                ProgressMonitorDialog progDialog = new SecurityControlCompareProgressMonitorDialog(shell, getValidOrganization());
+                ProgressMonitorDialog progDialog = new ControlCompareProgressMonitorDialog(shell, getValidOrganization());
                 try {
                     progDialog.run(true, true, progress);
                 } catch (InvocationTargetException e) {
@@ -581,7 +581,7 @@ public class Main implements PropertyChangeListener {
                 Api rulesApi = new RulesApi(shell, ps, getValidOrganization());
                 try {
                     List<Rule> rules = (List<Rule>) rulesApi.get();
-                    SecurityControlRulesShowDialog rulesShowDialog = new SecurityControlRulesShowDialog(shell, getValidOrganization(), rules);
+                    ControlRulesShowDialog rulesShowDialog = new ControlRulesShowDialog(shell, getValidOrganization(), rules);
                     rulesShowDialog.open();
                 } catch (Exception e2) {
                     MessageDialog.openError(shell, "ルール一覧", String.format("エラーが発生しました。ログファイルをご確認ください。\r\n%s", e2.getMessage()));

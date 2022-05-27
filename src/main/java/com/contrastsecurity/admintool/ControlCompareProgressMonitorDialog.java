@@ -5,11 +5,11 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.contrastsecurity.admintool.model.Organization;
 
-public class SecurityControlCompareProgressMonitorDialog extends ProgressMonitorDialog {
+public class ControlCompareProgressMonitorDialog extends ProgressMonitorDialog {
 
     private Organization org;
 
-    public SecurityControlCompareProgressMonitorDialog(Shell parent, Organization org) {
+    public ControlCompareProgressMonitorDialog(Shell parent, Organization org) {
         super(parent);
         this.org = org;
     }

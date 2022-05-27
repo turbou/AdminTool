@@ -46,14 +46,14 @@ import org.eclipse.swt.widgets.TableItem;
 import com.contrastsecurity.admintool.model.Organization;
 import com.contrastsecurity.admintool.model.Rule;
 
-public class SecurityControlRulesShowDialog extends Dialog {
+public class ControlRulesShowDialog extends Dialog {
 
     private Table table;
     private Organization org;
     private List<Rule> rules;
     private List<StyledText> styledTexts;
 
-    public SecurityControlRulesShowDialog(Shell parentShell, Organization org, List<Rule> rules) {
+    public ControlRulesShowDialog(Shell parentShell, Organization org, List<Rule> rules) {
         super(parentShell);
         this.org = org;
         this.rules = rules;
