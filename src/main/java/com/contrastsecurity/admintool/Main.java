@@ -173,6 +173,7 @@ public class Main implements PropertyChangeListener {
     }
 
     private void initialize() {
+        this.actionBtns = new ArrayList<Button>();
         try {
             String homeDir = System.getProperty("user.home");
             this.ps = new PreferenceStore(homeDir + "\\admintool.properties");
@@ -185,7 +186,6 @@ public class Main implements PropertyChangeListener {
                 this.ps = new PreferenceStore("admintool.properties");
                 this.ps.load();
             }
-            this.actionBtns = new ArrayList<Button>();
         } catch (Exception e) {
             e.printStackTrace();
         }
